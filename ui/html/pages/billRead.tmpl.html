@@ -1,0 +1,23 @@
+{{define "title"}}Bill #{{.Bill.ID}}{{end}}
+
+{{define "main"}}
+    {{with .Bill}}
+    <div class='snippet'>
+        <div class='metadata'>
+            <strong>{{.Name}}</strong>
+            <span>#{{.ID}}</span>
+        </div>
+        <div class='metadata'>
+            <!--  -->
+            <span>Description: {{.Description}}</span>
+            <span>Amount: {{.Amount | currency}}</span>
+            <time>Due Date: {{.DueDate | humanizeOrdinal}}</time>
+        </div>
+        <form action="/bill/archive/{{.ID}}" method="POST">
+            <div>
+                <input type='submit' value='Archive Bill'>
+            </div>
+        </form>
+    </div>
+    {{end}}
+{{end}}

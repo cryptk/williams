@@ -19,3 +19,9 @@
 
 # Go workspace file
 go.work
+
+# Database files
+*.sqlite
+
+# Cert files used during development
+tls/
