@@ -82,7 +82,7 @@ run/live:
 ## db/connect: create to the local database
 .PHONY: db/connect
 db/connect:
-	sqlite3 db.sqlite
+	sqlite3 -column -header db.sqlite
 
 ## db/connect: create to the local database
 .PHONY: db/wipe

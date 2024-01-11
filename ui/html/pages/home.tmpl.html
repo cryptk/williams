@@ -1,25 +1,28 @@
 {{define "title"}}Home{{end}}
 
 {{define "main"}}
-    <h2>Get to know your Bills</h2>
-    {{if .Bills }}
-    <table>
-        <tr>
-            <th>Name</th>
-            <th>Description</th>
-            <th>Amount</th>
-            <th>Due Date</th>
-        </tr>
-        {{range .Bills}}
-        <tr>
-            <td><a href='/bill/view/{{.ID}}'>{{.Name}}</a></td>
-            <td>{{.Description}}</td>
-            <td>${{.Amount | printf "%.2f"}}</td>
-            <td>{{.DueDate | humanizeOrdinal}}</td>
-        </tr>
+    {{ if .IsAuthenticated }}
+        {{if .Bills }}
+        <table>
+            <tr>
+                <th>Name</th>
+                <th>Description</th>
+                <th>Amount</th>
+                <th>Due Date</th>
+            </tr>
+            {{range .Bills}}
+            <tr>
+                <td><a href='/bill/view/{{.ID}}'>{{.Name}}</a></td>
+                <td>{{.Description}}</td>
+                <td>${{.Amount | printf "%.2f"}}</td>
+                <td>{{.DueDate | humanizeOrdinal}}</td>
+            </tr>
+            {{end}}
+        </table>
+        {{else}}
+        <p>There's nothing to see here yet</p>
         {{end}}
-    </table>
-    {{else}}
-    <p>There's nothing to see here yet</p>
-    {{end}}
+    {{ else }}
+        Log in or Register to begin
+    {{ end }}
 {{end}}

@@ -21,20 +21,22 @@ func (app *application) routes() http.Handler {
 	router.Handler(http.MethodGet, "/static/*filepath", http.StripPrefix("/static", fileServer))
 
 	// Create a new middleware chain for dynamic requests
-	dynamic := alice.New(app.sessionManager.LoadAndSave)
+	dynamic := alice.New(app.sessionManager.LoadAndSave, noSurf)
 
-	// Declare our routes
+	// Unprotected routes
 	router.Handler(http.MethodGet, "/", dynamic.ThenFunc(app.home))
 	router.Handler(http.MethodGet, "/bill/view/:id", dynamic.ThenFunc(app.billView))
-	router.Handler(http.MethodGet, "/bill/create", dynamic.ThenFunc(app.billCreate))
-	router.Handler(http.MethodPost, "/bill/create", dynamic.ThenFunc(app.billCreatePost))
-	router.Handler(http.MethodPost, "/bill/archive/:id", dynamic.ThenFunc(app.billArchive))
-
 	router.Handler(http.MethodGet, "/user/signup", dynamic.ThenFunc(app.userSignup))
 	router.Handler(http.MethodPost, "/user/signup", dynamic.ThenFunc(app.userSignupPost))
 	router.Handler(http.MethodGet, "/user/login", dynamic.ThenFunc(app.userLogin))
 	router.Handler(http.MethodPost, "/user/login", dynamic.ThenFunc(app.userLoginPost))
-	router.Handler(http.MethodPost, "/user/logout", dynamic.ThenFunc(app.userLogoutPost))
+
+	// Protected routes
+	protected := dynamic.Append(app.requireAuthentication)
+	router.Handler(http.MethodGet, "/bill/create", protected.ThenFunc(app.billCreate))
+	router.Handler(http.MethodPost, "/bill/create", protected.ThenFunc(app.billCreatePost))
+	router.Handler(http.MethodPost, "/bill/archive/:id", protected.ThenFunc(app.billArchive))
+	router.Handler(http.MethodPost, "/user/logout", protected.ThenFunc(app.userLogoutPost))
 
 	// Configure a standard middleware chain used for every request
 	standard := alice.New(app.recoverPanic, app.logRequest, secureHeaders)

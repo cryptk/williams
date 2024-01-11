@@ -14,11 +14,13 @@ import (
 // At the moment it only contains one field, but we'll add more
 // to it as the build progresses.
 type templateData struct {
-	CurrentYear int
-	Bill        models.Bill
-	Bills       []models.Bill
-	Form        any
-	Flash       string
+	CurrentYear     int
+	Bill            models.Bill
+	Bills           []models.Bill
+	Form            any
+	Flash           string
+	IsAuthenticated bool
+	CSRFToken       string
 }
 
 func humanizeOrdinal(i int) string {
