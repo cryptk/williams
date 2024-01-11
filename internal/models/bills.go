@@ -18,6 +18,7 @@ type Bill struct {
 
 type BillModel struct {
 	DB *sql.DB
+	// logger *slog.Logger
 }
 
 func (m *BillModel) Insert(name string, description string, amount float64, due int) (int, error) {
