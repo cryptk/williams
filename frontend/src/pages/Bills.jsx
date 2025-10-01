@@ -339,7 +339,8 @@ export function Bills() {
               )}
               {bill.category_id && (
                 <p class="category">
-                  {categories.find((cat) => cat.id === bill.category_id)?.name || "Unknown Category"}
+                  {categories.find((cat) => cat.id === bill.category_id)
+                    ?.name || "Unknown Category"}
                 </p>
               )}
               {bill.notes && <p class="notes">{bill.notes}</p>}

@@ -18,17 +18,9 @@ func CalculateNextDueDate(dueDay int, referenceDate time.Time) time.Time {
 	// Try the current month first
 	nextDue := time.Date(year, month, dueDay, 0, 0, 0, 0, GetAppLocation())
 
-	// If the due date in this month is before the reference date (by date only), move to next month
-	if (month < nextDue.Month()) || (month == nextDue.Month() && dueDay < refDay) {
+	// If the due day for this month has already passed, move to next month
+	if dueDay < refDay {
 		// Move to next month
-		month++
-		if month > 12 {
-			month = 1
-			year++
-		}
-		nextDue = time.Date(year, month, dueDay, 0, 0, 0, 0, GetAppLocation())
-	} else if dueDay < refDay {
-		// If today is after the due day, move to next month
 		month++
 		if month > 12 {
 			month = 1

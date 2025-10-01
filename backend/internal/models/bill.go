@@ -9,7 +9,7 @@ type Bill struct {
 	Name        string    `json:"name" gorm:"not null" binding:"required"`
 	Amount      float64   `json:"amount" gorm:"not null" binding:"required,gt=0"`
 	DueDay      int       `json:"due_day" gorm:"not null;check:due_day >= 1 AND due_day <= 31" binding:"required,min=1,max=31"`
-	CategoryID  string    `json:"category_id"`
+	CategoryID  *string   `json:"category_id"`
 	IsRecurring bool      `json:"is_recurring" gorm:"default:0"`
 	Notes       string    `json:"notes"`
 	CreatedAt   time.Time `json:"created_at" gorm:"autoCreateTime" binding:"-"` // Read-only, managed by backend

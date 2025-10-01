@@ -5,7 +5,7 @@ CREATE TABLE IF NOT EXISTS bills (
     name TEXT NOT NULL,
     amount REAL NOT NULL,
     due_day INTEGER NOT NULL CHECK(due_day >= 1 AND due_day <= 31),
-    category_id TEXT,
+    category_id TEXT NULL,
     is_recurring INTEGER DEFAULT 0,
     notes TEXT,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,

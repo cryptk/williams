@@ -58,6 +58,11 @@ func (s *Server) createBill(c *gin.Context) {
 	// Set the user ID for the bill
 	bill.UserID = userID.(string)
 
+	// If CategoryID is present but empty, set to nil so GORM inserts NULL
+	if bill.CategoryID != nil && *bill.CategoryID == "" {
+		bill.CategoryID = nil
+	}
+
 	if err := s.billService.CreateBill(&bill); err != nil {
 		log.Error().Err(err).Str("user_id", userID.(string)).Msg("Failed to create bill")
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
