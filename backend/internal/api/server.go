@@ -4,7 +4,9 @@ import (
 	"context"
 	"fmt"
 	"net/http"
+	"os"
 	"path/filepath"
+	"strings"
 	"time"
 
 	"github.com/cryptk/williams/internal/api/middleware"
@@ -129,18 +131,24 @@ func (s *Server) setupRoutes() {
 		// Remove leading slash for http.Dir
 		relativePath := cleanPath[1:]
 
-		// Ensure the resolved path stays within staticDir
+		// Ensure the resolved path stays within staticDir using filepath.Rel
 		fullPath := filepath.Join(staticDir, relativePath)
 		absStaticDir, err1 := filepath.Abs(staticDir)
 		absFullPath, err2 := filepath.Abs(fullPath)
-		if err1 != nil || err2 != nil || len(absFullPath) < len(absStaticDir) || absFullPath[:len(absStaticDir)] != absStaticDir {
+		if err1 != nil || err2 != nil {
+			c.AbortWithStatus(http.StatusForbidden)
+			return
+		}
+		rel, err := filepath.Rel(absStaticDir, absFullPath)
+		if err != nil || strings.HasPrefix(rel, "..") || filepath.IsAbs(rel) {
 			c.AbortWithStatus(http.StatusForbidden)
 			return
 		}
 
-		// Try to open the file
-		if _, err := http.Dir(staticDir).Open(relativePath); err == nil {
-			c.File(filepath.Join(staticDir, relativePath))
+		// Check if the file exists using os.Stat (more efficient than opening twice)
+		fileToServe := filepath.Join(staticDir, relativePath)
+		if info, err := os.Stat(fileToServe); err == nil && !info.IsDir() {
+			c.File(fileToServe)
 			return
 		}
 		// Fallback: if not found, serve index.html for SPA routes (except for actual missing files)

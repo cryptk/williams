@@ -2,7 +2,10 @@
 
 .PHONY: all build build/frontend build/backend run/frontend run/backend clean clean/frontend clean/backend lint/frontend lint/backend test/frontend test/backend help
 
+
 all: build/frontend build/backend
+run: build/frontend build/backend
+	./build/williams
 
 build: build/frontend build/backend
 
@@ -57,6 +60,7 @@ help:
 	@echo "  build/backend     Build backend production binary (to build/williams)"
 	@echo "  run/frontend      Run frontend in dev mode"
 	@echo "  run/backend       Run backend in dev mode"
+	@echo "  run               Build everything and run the backend binary from build/"
 	@echo "  clean             Remove all build artifacts in build/"
 	@echo "  clean/frontend    Remove frontend build artifacts (build/dist)"
 	@echo "  clean/backend     Remove backend build binary (build/williams)"
