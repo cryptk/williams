@@ -20,17 +20,17 @@ func (s *CategoryService) CreateCategory(category *models.Category) error {
 	return s.repo.Create(category)
 }
 
-// GetCategory retrieves a category by ID
-func (s *CategoryService) GetCategory(id string) (*models.Category, error) {
-	return s.repo.GetByID(id)
+// ListCategoriesByUser retrieves all categories for a specific user
+func (s *CategoryService) ListCategoriesByUser(userID string) ([]*models.Category, error) {
+	return s.repo.ListByUser(userID)
 }
 
-// ListCategories retrieves all categories
-func (s *CategoryService) ListCategories() ([]*models.Category, error) {
-	return s.repo.List()
+// DeleteCategoryByUser deletes a category and verifies ownership
+func (s *CategoryService) DeleteCategoryByUser(id string, userID string) error {
+	return s.repo.DeleteByUser(id, userID)
 }
 
-// DeleteCategory deletes a category
-func (s *CategoryService) DeleteCategory(id string) error {
-	return s.repo.Delete(id)
+// CreateDefaultCategories creates default categories for a new user
+func (s *CategoryService) CreateDefaultCategories(userID string) error {
+	return s.repo.CreateDefaultCategories(userID)
 }
