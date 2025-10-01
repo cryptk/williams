@@ -1,0 +1,22 @@
+server:
+  host: localhost
+  port: 8080
+
+database:
+  driver: sqlite  # sqlite, mysql, or postgres
+  dsn: ./williams.db  # For SQLite: file path (foreign keys automatically enabled). For MySQL: user:pass@tcp(host:port)/dbname. For PostgreSQL: postgres://user:pass@host:port/dbname
+
+auth:
+  jwt_secret: change-this-secret-in-production-use-long-random-string
+
+bills:
+  payment_grace_days: 7  # Number of days before next due date to consider a recurring bill as paid
+
+logging:
+  level: info
+  format: json
+
+# Timezone for date/time storage and calculations
+# Use IANA timezone format (e.g., "America/New_York", "America/Chicago", "UTC")
+# Default: UTC
+timezone: UTC
