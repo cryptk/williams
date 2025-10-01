@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'preact/hooks';
 import { route } from 'preact-router';
 import { getBills, createBill, updateBill, deleteBill, getCategories, createPayment, getPayments, deletePayment } from '../services/api';
+import { getBillStatus, getDaySuffix } from '../utils/helpers';
 
 export function Bills() {
   const [bills, setBills] = useState([]);
@@ -24,32 +25,6 @@ export function Bills() {
     is_recurring: true,
     notes: ''
   });
-
-  // Helper function to add ordinal suffix to day numbers
-  const getDaySuffix = (day) => {
-    if (day >= 11 && day <= 13) return 'th';
-    switch (day % 10) {
-      case 1: return 'st';
-      case 2: return 'nd';
-      case 3: return 'rd';
-      default: return 'th';
-    }
-  };
-
-  // Helper function to determine bill status for styling
-  const getBillStatus = (bill) => {
-    if (bill.is_paid) return 'normal';
-    if (!bill.next_due_date) return 'normal';
-    
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    const dueDate = new Date(bill.next_due_date);
-    dueDate.setHours(0, 0, 0, 0);
-    
-    if (dueDate < today) return 'overdue';
-    if (dueDate.getTime() === today.getTime()) return 'due-today';
-    return 'normal';
-  };
 
   useEffect(() => {
     loadBills();
