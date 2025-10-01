@@ -28,12 +28,15 @@ williams/
 │   │       └── main.go          # Application entry point
 │   ├── internal/
 │   │   ├── api/                 # API handlers and routes
+│   │   │   └── middleware/      # Authentication and other middleware
 │   │   ├── config/              # Configuration management (Viper)
 │   │   ├── database/            # Database connection and migrations
+│   │   │   └── migrations/      # SQL migration files
 │   │   ├── models/              # Data models
 │   │   ├── services/            # Business logic
 │   │   └── repository/          # Data access layer
 │   ├── pkg/                     # Public packages
+│   │   └── utils/               # Utility functions (date, timezone)
 │   ├── configs/                 # Configuration files
 │   │   └── config.yaml
 │   ├── go.mod
@@ -44,11 +47,15 @@ williams/
 │   │   ├── pages/               # Page components
 │   │   ├── services/            # API service calls
 │   │   ├── styles/              # Global styles
+│   │   ├── utils/               # Utility functions
 │   │   └── main.jsx             # Entry point
 │   ├── public/
 │   ├── index.html
 │   ├── package.json
 │   └── vite.config.js
+├── docs/                        # Documentation
+│   ├── backend/                 # Backend-specific docs
+│   └── frontend/                # Frontend-specific docs
 ├── .github/
 │   └── copilot-instructions.md
 ├── .gitignore
@@ -75,6 +82,11 @@ database:
   dsn: ./williams.db
   # For MySQL: user:pass@tcp(host:port)/dbname
   # For PostgreSQL: postgres://user:pass@host:port/dbname
+auth:
+  jwt_secret: your-secret-key-here  # Change in production!
+bills:
+  payment_grace_days: 3  # Days before due date to consider bill paid
+timezone: America/Los_Angeles  # Application timezone for date calculations
 logging:
   level: info
   format: json
@@ -113,23 +125,40 @@ database:
 - Written in database-agnostic SQL for maximum compatibility
 - Versioned with golang-migrate
 
-## API Endpoints (Planned)
+## API Endpoints
+
+### Authentication
+- `POST /api/v1/auth/register` - Register new user account
+- `POST /api/v1/auth/login` - Login and receive JWT token
+- `GET /api/v1/auth/me` - Get current user info (protected)
 
 ### Bills
-- `GET /api/v1/bills` - List all bills
-- `GET /api/v1/bills/:id` - Get bill details
-- `POST /api/v1/bills` - Create new bill
-- `PUT /api/v1/bills/:id` - Update bill
-- `DELETE /api/v1/bills/:id` - Delete bill
+- `GET /api/v1/bills` - List all bills for the authenticated user
+- `GET /api/v1/bills/:id` - Get bill details (protected, ownership verified)
+- `POST /api/v1/bills` - Create new bill (protected)
+- `PUT /api/v1/bills/:id` - Update bill (protected, ownership verified)
+- `DELETE /api/v1/bills/:id` - Delete bill (protected, ownership verified)
+
+### Payments
+- `POST /api/v1/bills/:id/payments` - Create payment for a bill (protected, ownership verified)
+- `GET /api/v1/bills/:id/payments` - List payments for a bill (protected, ownership verified)
+- `DELETE /api/v1/bills/:id/payments/:payment_id` - Delete payment (protected, ownership verified)
 
 ### Categories
-- `GET /api/v1/categories` - List categories
-- `POST /api/v1/categories` - Create category
+- `GET /api/v1/categories` - List categories for the authenticated user (protected)
+- `POST /api/v1/categories` - Create category (protected)
+- `DELETE /api/v1/categories/:id` - Delete category (protected, ownership verified)
 
 ### Statistics
-- `GET /api/v1/stats/summary` - Get bill statistics
+- `GET /api/v1/stats/summary` - Get bill statistics for the authenticated user (protected)
 
 ## Development Guidelines
+
+### Security Best Practices
+1. **Never trust user_id from request bodies** - Always extract from validated JWT tokens
+2. **Always verify resource ownership** - Check that the authenticated user owns the resource
+3. **Use the `*ByUser` repository methods** - These enforce ownership checks at the data layer
+4. **Protected endpoints require authentication** - Use the AuthMiddleware for all protected routes
 
 ### Go Backend
 1. Follow standard Go project layout
@@ -138,6 +167,7 @@ database:
 4. Use proper error handling and logging
 5. Follow Go naming conventions and idioms
 6. Use Go modules for dependency management
+7. All timestamps use application timezone (configured in config.yaml)
 
 ### Frontend
 1. Keep components small and focused
@@ -159,19 +189,71 @@ database:
 
 ## Data Models
 
+### User
+```go
+type User struct {
+    ID           string    `json:"id"`
+    Username     string    `json:"username"`
+    Email        string    `json:"email"`
+    PasswordHash string    `json:"-"` // Never exposed in JSON
+    CreatedAt    time.Time `json:"created_at"`
+    UpdatedAt    time.Time `json:"updated_at"`
+}
+```
+
 ### Bill
 ```go
 type Bill struct {
     ID          string    `json:"id"`
+    UserID      string    `json:"user_id"`
     Name        string    `json:"name"`
     Amount      float64   `json:"amount"`
-    DueDate     time.Time `json:"due_date"`
+    DueDay      int       `json:"due_day"` // Day of month (1-31)
     Category    string    `json:"category"`
-    IsPaid      bool      `json:"is_paid"`
     IsRecurring bool      `json:"is_recurring"`
     Notes       string    `json:"notes"`
     CreatedAt   time.Time `json:"created_at"`
     UpdatedAt   time.Time `json:"updated_at"`
+    
+    // Computed fields (not stored in database)
+    IsPaid       bool       `json:"is_paid"`
+    NextDueDate  *time.Time `json:"next_due_date,omitempty"`
+    LastPaidDate *time.Time `json:"last_paid_date,omitempty"`
+}
+```
+
+### Payment
+```go
+type Payment struct {
+    ID          string    `json:"id"`
+    BillID      string    `json:"bill_id"`
+    Amount      float64   `json:"amount"`
+    PaymentDate time.Time `json:"payment_date"` // The due date being paid
+    Notes       string    `json:"notes"`
+    CreatedAt   time.Time `json:"created_at"` // When payment was recorded
+}
+```
+
+### Category
+```go
+type Category struct {
+    ID        string    `json:"id"`
+    UserID    string    `json:"user_id"` // Categories are user-specific
+    Name      string    `json:"name"`
+    Color     string    `json:"color"`
+    CreatedAt time.Time `json:"created_at"`
+}
+```
+
+### BillStats
+```go
+type BillStats struct {
+    TotalBills    int     `json:"total_bills"`
+    TotalAmount   float64 `json:"total_amount"`
+    DueAmount     float64 `json:"due_amount"` // Total amount of unpaid bills
+    PaidBills     int     `json:"paid_bills"`
+    UnpaidBills   int     `json:"unpaid_bills"`
+    UpcomingBills int     `json:"upcoming_bills"`
 }
 ```
 
@@ -195,7 +277,9 @@ npm run dev
 - Payment reminders
 - Bill history tracking
 - Budget planning
-- Multi-user support
 - Payment integrations
 - Mobile app
-- Recurring bill automation
+- Export to CSV/PDF
+- Recurring bill automation enhancements
+- Bill sharing between users
+- Multiple payment methods tracking

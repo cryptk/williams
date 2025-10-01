@@ -13,15 +13,17 @@ import (
 
 // AuthService handles authentication business logic
 type AuthService struct {
-	userRepo  repository.UserRepository
-	jwtSecret []byte
+	userRepo     repository.UserRepository
+	categoryRepo repository.CategoryRepository
+	jwtSecret    []byte
 }
 
 // NewAuthService creates a new authentication service
-func NewAuthService(userRepo repository.UserRepository, jwtSecret string) *AuthService {
+func NewAuthService(userRepo repository.UserRepository, categoryRepo repository.CategoryRepository, jwtSecret string) *AuthService {
 	return &AuthService{
-		userRepo:  userRepo,
-		jwtSecret: []byte(jwtSecret),
+		userRepo:     userRepo,
+		categoryRepo: categoryRepo,
+		jwtSecret:    []byte(jwtSecret),
 	}
 }
 
@@ -52,6 +54,13 @@ func (s *AuthService) Register(req *models.RegisterRequest) (*models.User, error
 
 	if err := s.userRepo.Create(user); err != nil {
 		return nil, fmt.Errorf("failed to create user: %w", err)
+	}
+
+	// Create default categories for the new user
+	if err := s.categoryRepo.CreateDefaultCategories(user.ID); err != nil {
+		// Log the error but don't fail registration
+		// The user can create categories manually if this fails
+		fmt.Printf("Warning: failed to create default categories for user %s: %v\n", user.ID, err)
 	}
 
 	return user, nil

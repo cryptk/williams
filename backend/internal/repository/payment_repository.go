@@ -1,6 +1,8 @@
 package repository
 
 import (
+	"fmt"
+
 	"github.com/cryptk/williams/internal/models"
 	"github.com/cryptk/williams/pkg/utils"
 	"github.com/google/uuid"
@@ -10,11 +12,9 @@ import (
 // PaymentRepository defines the interface for payment data operations
 type PaymentRepository interface {
 	Create(payment *models.Payment) error
-	GetByID(id string) (*models.Payment, error)
-	GetByBillID(billID string) ([]*models.Payment, error)
+	GetByBillIDAndUser(billID string, userID string) ([]*models.Payment, error)
 	GetLatestByBillID(billID string) (*models.Payment, error)
-	List() ([]*models.Payment, error)
-	Delete(id string) error
+	DeleteByUser(id string, userID string) error
 }
 
 // paymentRepository implements PaymentRepository
@@ -44,19 +44,14 @@ func (r *paymentRepository) Create(payment *models.Payment) error {
 	return r.db.Create(payment).Error
 }
 
-// GetByID retrieves a payment by ID
-func (r *paymentRepository) GetByID(id string) (*models.Payment, error) {
-	var payment models.Payment
-	if err := r.db.First(&payment, "id = ?", id).Error; err != nil {
-		return nil, err
-	}
-	return &payment, nil
-}
-
-// GetByBillID retrieves all payments for a specific bill
-func (r *paymentRepository) GetByBillID(billID string) ([]*models.Payment, error) {
+// GetByBillIDAndUser retrieves all payments for a specific bill and verifies bill ownership
+func (r *paymentRepository) GetByBillIDAndUser(billID string, userID string) ([]*models.Payment, error) {
 	var payments []*models.Payment
-	if err := r.db.Where("bill_id = ?", billID).Order("payment_date DESC").Find(&payments).Error; err != nil {
+	// Join with bills table to verify ownership
+	if err := r.db.Joins("JOIN bills ON payments.bill_id = bills.id").
+		Where("payments.bill_id = ? AND bills.user_id = ?", billID, userID).
+		Order("payments.payment_date DESC").
+		Find(&payments).Error; err != nil {
 		return nil, err
 	}
 	return payments, nil
@@ -74,16 +69,19 @@ func (r *paymentRepository) GetLatestByBillID(billID string) (*models.Payment, e
 	return &payment, nil
 }
 
-// List retrieves all payments
-func (r *paymentRepository) List() ([]*models.Payment, error) {
-	var payments []*models.Payment
-	if err := r.db.Order("payment_date DESC").Find(&payments).Error; err != nil {
-		return nil, err
+// DeleteByUser deletes a payment by ID and verifies bill ownership
+func (r *paymentRepository) DeleteByUser(id string, userID string) error {
+	// Need to join with bills to verify ownership
+	var payment models.Payment
+	if err := r.db.Joins("JOIN bills ON payments.bill_id = bills.id").
+		Where("payments.id = ? AND bills.user_id = ?", id, userID).
+		First(&payment).Error; err != nil {
+		if err == gorm.ErrRecordNotFound {
+			return fmt.Errorf("payment not found or access denied")
+		}
+		return err
 	}
-	return payments, nil
-}
 
-// Delete deletes a payment by ID
-func (r *paymentRepository) Delete(id string) error {
+	// Now delete the payment
 	return r.db.Delete(&models.Payment{}, "id = ?", id).Error
 }

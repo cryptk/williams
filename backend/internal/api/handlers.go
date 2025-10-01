@@ -28,8 +28,10 @@ func (s *Server) listBills(c *gin.Context) {
 
 func (s *Server) getBill(c *gin.Context) {
 	id := c.Param("id")
+	// Get authenticated user ID
+	userID, _ := c.Get("user_id")
 
-	bill, err := s.billService.GetBill(id)
+	bill, err := s.billService.GetBillByUser(id, userID.(string))
 	if err != nil {
 		c.JSON(http.StatusNotFound, gin.H{
 			"error": "Bill not found",
@@ -64,6 +66,8 @@ func (s *Server) createBill(c *gin.Context) {
 
 func (s *Server) updateBill(c *gin.Context) {
 	id := c.Param("id")
+	// Get authenticated user ID
+	userID, _ := c.Get("user_id")
 
 	var bill models.Bill
 	if err := c.ShouldBindJSON(&bill); err != nil {
@@ -71,8 +75,11 @@ func (s *Server) updateBill(c *gin.Context) {
 		return
 	}
 
+	// SECURITY: Always set user_id from JWT, never from request body
 	bill.ID = id
-	if err := s.billService.UpdateBill(&bill); err != nil {
+	bill.UserID = userID.(string)
+
+	if err := s.billService.UpdateBillByUser(&bill, userID.(string)); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
@@ -82,8 +89,10 @@ func (s *Server) updateBill(c *gin.Context) {
 
 func (s *Server) deleteBill(c *gin.Context) {
 	id := c.Param("id")
+	// Get authenticated user ID
+	userID, _ := c.Get("user_id")
 
-	if err := s.billService.DeleteBill(id); err != nil {
+	if err := s.billService.DeleteBillByUser(id, userID.(string)); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
@@ -97,7 +106,10 @@ func (s *Server) deleteBill(c *gin.Context) {
 // Category handlers
 
 func (s *Server) listCategories(c *gin.Context) {
-	categories, err := s.categoryService.ListCategories()
+	// Get authenticated user ID
+	userID, _ := c.Get("user_id")
+
+	categories, err := s.categoryService.ListCategoriesByUser(userID.(string))
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
@@ -109,11 +121,17 @@ func (s *Server) listCategories(c *gin.Context) {
 }
 
 func (s *Server) createCategory(c *gin.Context) {
+	// Get authenticated user ID
+	userID, _ := c.Get("user_id")
+
 	var category models.Category
 	if err := c.ShouldBindJSON(&category); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
+
+	// SECURITY: Always set user_id from JWT, never from request body
+	category.UserID = userID.(string)
 
 	if err := s.categoryService.CreateCategory(&category); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
@@ -125,8 +143,10 @@ func (s *Server) createCategory(c *gin.Context) {
 
 func (s *Server) deleteCategory(c *gin.Context) {
 	id := c.Param("id")
+	// Get authenticated user ID
+	userID, _ := c.Get("user_id")
 
-	if err := s.categoryService.DeleteCategory(id); err != nil {
+	if err := s.categoryService.DeleteCategoryByUser(id, userID.(string)); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
@@ -156,6 +176,8 @@ func (s *Server) getStatsSummary(c *gin.Context) {
 
 func (s *Server) createPayment(c *gin.Context) {
 	billID := c.Param("id")
+	// Get authenticated user ID
+	userID, _ := c.Get("user_id")
 
 	var payment models.Payment
 	if err := c.ShouldBindJSON(&payment); err != nil {
@@ -168,7 +190,7 @@ func (s *Server) createPayment(c *gin.Context) {
 	// Convert payment date to application timezone
 	payment.PaymentDate = utils.ConvertToAppTimezone(payment.PaymentDate)
 
-	if err := s.billService.CreatePayment(&payment); err != nil {
+	if err := s.billService.CreatePaymentByUser(&payment, userID.(string)); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
@@ -178,8 +200,10 @@ func (s *Server) createPayment(c *gin.Context) {
 
 func (s *Server) listPayments(c *gin.Context) {
 	billID := c.Param("id")
+	// Get authenticated user ID
+	userID, _ := c.Get("user_id")
 
-	payments, err := s.billService.GetPaymentsByBill(billID)
+	payments, err := s.billService.GetPaymentsByBillAndUser(billID, userID.(string))
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
@@ -193,8 +217,10 @@ func (s *Server) listPayments(c *gin.Context) {
 
 func (s *Server) deletePayment(c *gin.Context) {
 	paymentID := c.Param("payment_id")
+	// Get authenticated user ID
+	userID, _ := c.Get("user_id")
 
-	if err := s.billService.DeletePayment(paymentID); err != nil {
+	if err := s.billService.DeletePaymentByUser(paymentID, userID.(string)); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}

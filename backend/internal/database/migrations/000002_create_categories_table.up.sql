@@ -1,15 +1,14 @@
--- Create categories table
+-- Create categories table (user-specific)
 CREATE TABLE IF NOT EXISTS categories (
     id TEXT PRIMARY KEY,
-    name TEXT NOT NULL UNIQUE,
+    user_id TEXT NOT NULL,
+    name TEXT NOT NULL,
     color TEXT,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP
 );
 
--- Insert default categories
-INSERT OR IGNORE INTO categories (id, name, color) VALUES
-    ('cat_utilities', 'Utilities', '#3498db'),
-    ('cat_rent', 'Rent', '#e74c3c'),
-    ('cat_insurance', 'Insurance', '#2ecc71'),
-    ('cat_subscriptions', 'Subscriptions', '#f39c12'),
-    ('cat_other', 'Other', '#95a5a6');
+-- Create index on user_id for better query performance
+CREATE INDEX IF NOT EXISTS idx_categories_user_id ON categories(user_id);
+
+-- Note: Default categories are now created automatically when a user registers
+-- No longer creating global default categories

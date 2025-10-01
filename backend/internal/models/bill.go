@@ -34,6 +34,7 @@ type Payment struct {
 // Category represents a bill category
 type Category struct {
 	ID        string    `json:"id" gorm:"primaryKey"`
+	UserID    string    `json:"user_id" gorm:"not null;index"`
 	Name      string    `json:"name" gorm:"not null" binding:"required"`
 	Color     string    `json:"color"`
 	CreatedAt time.Time `json:"created_at" gorm:"autoCreateTime" binding:"-"` // Read-only, managed by backend

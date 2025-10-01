@@ -12,12 +12,10 @@ import (
 // BillRepository defines the interface for bill data operations
 type BillRepository interface {
 	Create(bill *models.Bill) error
-	GetByID(id string) (*models.Bill, error)
+	GetByIDAndUser(id string, userID string) (*models.Bill, error)
 	GetByUserID(userID string) ([]*models.Bill, error)
-	List() ([]*models.Bill, error)
-	Update(bill *models.Bill) error
-	Delete(id string) error
-	GetStats() (*models.BillStats, error)
+	UpdateByUser(bill *models.Bill, userID string) error
+	DeleteByUser(id string, userID string) error
 	GetStatsByUser(userID string) (*models.BillStats, error)
 }
 
@@ -42,25 +40,16 @@ func (r *billRepository) Create(bill *models.Bill) error {
 	return r.db.Create(bill).Error
 }
 
-// GetByID retrieves a bill by ID
-func (r *billRepository) GetByID(id string) (*models.Bill, error) {
+// GetByIDAndUser retrieves a bill by ID and verifies ownership
+func (r *billRepository) GetByIDAndUser(id string, userID string) (*models.Bill, error) {
 	var bill models.Bill
-	if err := r.db.First(&bill, "id = ?", id).Error; err != nil {
+	if err := r.db.First(&bill, "id = ? AND user_id = ?", id, userID).Error; err != nil {
 		if err == gorm.ErrRecordNotFound {
 			return nil, fmt.Errorf("bill not found")
 		}
 		return nil, err
 	}
 	return &bill, nil
-}
-
-// List retrieves all bills
-func (r *billRepository) List() ([]*models.Bill, error) {
-	var bills []*models.Bill
-	if err := r.db.Order("name ASC").Find(&bills).Error; err != nil {
-		return nil, err
-	}
-	return bills, nil
 }
 
 // GetByUserID retrieves bills for a specific user
@@ -72,59 +61,35 @@ func (r *billRepository) GetByUserID(userID string) ([]*models.Bill, error) {
 	return bills, nil
 }
 
-// Update updates an existing bill
-func (r *billRepository) Update(bill *models.Bill) error {
-	// Fetch the existing bill to preserve CreatedAt
+// UpdateByUser updates an existing bill and verifies ownership
+func (r *billRepository) UpdateByUser(bill *models.Bill, userID string) error {
+	// Fetch the existing bill to preserve CreatedAt and verify ownership
 	var existing models.Bill
-	if err := r.db.First(&existing, "id = ?", bill.ID).Error; err != nil {
+	if err := r.db.First(&existing, "id = ? AND user_id = ?", bill.ID, userID).Error; err != nil {
+		if err == gorm.ErrRecordNotFound {
+			return fmt.Errorf("bill not found or access denied")
+		}
 		return err
 	}
 
-	// Preserve CreatedAt from existing record, set UpdatedAt to now
+	// Preserve CreatedAt and UserID from existing record, set UpdatedAt to now
 	bill.CreatedAt = existing.CreatedAt
+	bill.UserID = existing.UserID
 	bill.UpdatedAt = utils.NowInAppTimezone()
 
 	return r.db.Save(bill).Error
 }
 
-// Delete deletes a bill by ID
-func (r *billRepository) Delete(id string) error {
-	return r.db.Delete(&models.Bill{}, "id = ?", id).Error
-}
-
-// GetStats calculates bill statistics
-func (r *billRepository) GetStats() (*models.BillStats, error) {
-	var stats models.BillStats
-
-	// Total bills count
-	if err := r.db.Model(&models.Bill{}).Count(&[]int64{int64(stats.TotalBills)}[0]).Error; err != nil {
-		return nil, err
+// DeleteByUser deletes a bill by ID and verifies ownership
+func (r *billRepository) DeleteByUser(id string, userID string) error {
+	result := r.db.Delete(&models.Bill{}, "id = ? AND user_id = ?", id, userID)
+	if result.Error != nil {
+		return result.Error
 	}
-
-	// Total amount
-	type Result struct {
-		Total float64
+	if result.RowsAffected == 0 {
+		return fmt.Errorf("bill not found or access denied")
 	}
-	var result Result
-	if err := r.db.Model(&models.Bill{}).Select("COALESCE(SUM(amount), 0) as total").Scan(&result).Error; err != nil {
-		return nil, err
-	}
-	stats.TotalAmount = result.Total
-
-	// Note: Paid/Unpaid/Upcoming stats are now calculated in the service layer
-	// since is_paid is a computed field based on payments and grace period
-	stats.PaidBills = 0
-	stats.UnpaidBills = 0
-	stats.UpcomingBills = 0
-
-	// Update total bills with actual count
-	var totalCount int64
-	if err := r.db.Model(&models.Bill{}).Count(&totalCount).Error; err != nil {
-		return nil, err
-	}
-	stats.TotalBills = int(totalCount)
-
-	return &stats, nil
+	return nil
 }
 
 // GetStatsByUser calculates bill statistics for a specific user

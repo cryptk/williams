@@ -445,18 +445,6 @@ export function Bills() {
                 <label>
                   <input
                     type="checkbox"
-                    name="is_paid"
-                    checked={formData.is_paid}
-                    onChange={handleInputChange}
-                  />
-                  <span>Mark as paid</span>
-                </label>
-              </div>
-
-              <div class="form-group checkbox-group">
-                <label>
-                  <input
-                    type="checkbox"
                     name="is_recurring"
                     checked={formData.is_recurring}
                     onChange={handleInputChange}

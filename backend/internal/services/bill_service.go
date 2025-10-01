@@ -30,9 +30,9 @@ func (s *BillService) CreateBill(bill *models.Bill) error {
 	return s.repo.Create(bill)
 }
 
-// GetBill retrieves a bill by ID
-func (s *BillService) GetBill(id string) (*models.Bill, error) {
-	bill, err := s.repo.GetByID(id)
+// GetBillByUser retrieves a bill by ID and verifies ownership
+func (s *BillService) GetBillByUser(id string, userID string) (*models.Bill, error) {
+	bill, err := s.repo.GetByIDAndUser(id, userID)
 	if err != nil {
 		return nil, err
 	}
@@ -61,23 +61,25 @@ func (s *BillService) CreatePayment(payment *models.Payment) error {
 	return s.paymentRepo.Create(payment)
 }
 
-// GetPaymentsByBill retrieves all payments for a bill
-func (s *BillService) GetPaymentsByBill(billID string) ([]*models.Payment, error) {
-	return s.paymentRepo.GetByBillID(billID)
-}
-
-// DeletePayment deletes a payment by ID
-func (s *BillService) DeletePayment(paymentID string) error {
-	return s.paymentRepo.Delete(paymentID)
-}
-
-// ListBills retrieves all bills
-func (s *BillService) ListBills() ([]*models.Bill, error) {
-	bills, err := s.repo.List()
+// CreatePaymentByUser creates a payment for a bill and verifies bill ownership
+func (s *BillService) CreatePaymentByUser(payment *models.Payment, userID string) error {
+	// First verify the bill exists and belongs to the user
+	_, err := s.repo.GetByIDAndUser(payment.BillID, userID)
 	if err != nil {
-		return nil, err
+		return err
 	}
-	return s.enrichBillsWithPaymentStatus(bills)
+	// Create the payment
+	return s.paymentRepo.Create(payment)
+}
+
+// GetPaymentsByBillAndUser retrieves all payments for a bill and verifies ownership
+func (s *BillService) GetPaymentsByBillAndUser(billID string, userID string) ([]*models.Payment, error) {
+	return s.paymentRepo.GetByBillIDAndUser(billID, userID)
+}
+
+// DeletePaymentByUser deletes a payment by ID and verifies bill ownership
+func (s *BillService) DeletePaymentByUser(paymentID string, userID string) error {
+	return s.paymentRepo.DeleteByUser(paymentID, userID)
 }
 
 // ListBillsByUser retrieves all bills for a specific user
@@ -153,40 +155,14 @@ func (s *BillService) calculateIsPaid(bill *models.Bill) (bool, error) {
 	return payment != nil, nil
 }
 
-// UpdateBill updates an existing bill
-func (s *BillService) UpdateBill(bill *models.Bill) error {
-	return s.repo.Update(bill)
+// UpdateBillByUser updates an existing bill and verifies ownership
+func (s *BillService) UpdateBillByUser(bill *models.Bill, userID string) error {
+	return s.repo.UpdateByUser(bill, userID)
 }
 
-// DeleteBill deletes a bill
-func (s *BillService) DeleteBill(id string) error {
-	return s.repo.Delete(id)
-}
-
-// GetStats retrieves bill statistics
-func (s *BillService) GetStats() (*models.BillStats, error) {
-	stats, err := s.repo.GetStats()
-	if err != nil {
-		return nil, err
-	}
-
-	// Get all bills to calculate paid/unpaid stats
-	bills, err := s.ListBills()
-	if err != nil {
-		return nil, err
-	}
-
-	// Calculate paid/unpaid counts and due amount based on computed is_paid field
-	for _, bill := range bills {
-		if bill.IsPaid {
-			stats.PaidBills++
-		} else {
-			stats.UnpaidBills++
-			stats.DueAmount += bill.Amount
-		}
-	}
-
-	return stats, nil
+// DeleteBillByUser deletes a bill and verifies ownership
+func (s *BillService) DeleteBillByUser(id string, userID string) error {
+	return s.repo.DeleteByUser(id, userID)
 }
 
 // GetStatsByUser retrieves bill statistics for a specific user
