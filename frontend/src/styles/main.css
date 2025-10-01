@@ -120,6 +120,9 @@ body {
   padding: 2rem;
   border-radius: 8px;
   box-shadow: var(--shadow);
+  position: relative;
+  transition: transform 0.1s ease-out;
+  will-change: box-shadow;
 }
 
 .stat-card.highlight {
@@ -165,12 +168,12 @@ body {
   border-radius: 8px;
   box-shadow: var(--shadow);
   position: relative;
-  transition: transform 0.2s, box-shadow 0.2s, background-color 0.3s;
+  transition: transform 0.1s ease-out, background-color 0.3s;
+  will-change: box-shadow;
 }
 
 .bill-card:hover {
   transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
 
 /* Bill status colors */

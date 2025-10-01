@@ -56,6 +56,7 @@ export function Bills() {
   }, []);
 
   const loadBills = async () => {
+    console.log('Loading bills...');
     try {
       const data = await getBills();
       setBills(data.bills || []);

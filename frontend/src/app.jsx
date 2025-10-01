@@ -6,6 +6,7 @@ import { Dashboard } from './pages/Dashboard';
 import { Bills } from './pages/Bills';
 import { Categories } from './pages/Categories';
 import { NotFound } from './pages/NotFound';
+import { initCardShadows } from './utils/cardEffects';
 
 export function App() {
   const [user, setUser] = useState(null);
@@ -27,6 +28,14 @@ export function App() {
     }
     setLoading(false);
   }, []);
+
+  useEffect(() => {
+    // Initialize card shadow effects when user is logged in
+    if (user) {
+      const cleanup = initCardShadows();
+      return cleanup;
+    }
+  }, [user]);
 
   const handleLoginSuccess = (userData) => {
     setUser(userData);
