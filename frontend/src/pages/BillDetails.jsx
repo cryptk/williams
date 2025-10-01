@@ -1,7 +1,12 @@
-import { useState, useEffect } from 'preact/hooks';
-import { route } from 'preact-router';
-import { getBill, getPayments, createPayment, deletePayment } from '../services/api';
-import { getBillStatus, getDaySuffix } from '../utils/helpers';
+import { useState, useEffect } from "preact/hooks";
+import { route } from "preact-router";
+import {
+  getBill,
+  getPayments,
+  createPayment,
+  deletePayment,
+} from "../services/api";
+import { getBillStatus, getDaySuffix } from "../utils/helpers";
 
 export function BillDetails({ id }) {
   const [bill, setBill] = useState(null);
@@ -12,11 +17,11 @@ export function BillDetails({ id }) {
   const [paymentToDelete, setPaymentToDelete] = useState(null);
   const [submitting, setSubmitting] = useState(false);
   const [deleting, setDeleting] = useState(false);
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
   const [paymentFormData, setPaymentFormData] = useState({
-    amount: '',
-    payment_date: '',
-    notes: ''
+    amount: "",
+    payment_date: "",
+    notes: "",
   });
 
   useEffect(() => {
@@ -30,14 +35,14 @@ export function BillDetails({ id }) {
     try {
       const [billData, paymentsData] = await Promise.all([
         getBill(id),
-        getPayments(id)
+        getPayments(id),
       ]);
-      
+
       setBill(billData);
       setPayments(paymentsData.payments || []);
     } catch (error) {
-      console.error('Failed to load bill details:', error);
-      setError('Failed to load bill details');
+      console.error("Failed to load bill details:", error);
+      setError("Failed to load bill details");
     } finally {
       setLoading(false);
     }
@@ -45,33 +50,33 @@ export function BillDetails({ id }) {
 
   const handlePaymentInputChange = (e) => {
     const { name, value } = e.target;
-    setPaymentFormData(prev => ({
+    setPaymentFormData((prev) => ({
       ...prev,
-      [name]: value
+      [name]: value,
     }));
   };
 
   const handleAddPayment = () => {
     // Pre-fill with bill amount and today's date
     const today = new Date();
-    const todayStr = today.toISOString().split('T')[0]; // YYYY-MM-DD format
-    
+    const todayStr = today.toISOString().split("T")[0]; // YYYY-MM-DD format
+
     setPaymentFormData({
-      amount: bill ? bill.amount.toString() : '',
+      amount: bill ? bill.amount.toString() : "",
       payment_date: todayStr,
-      notes: ''
+      notes: "",
     });
     setShowPaymentModal(true);
   };
 
   const handlePaymentSubmit = async (e) => {
     e.preventDefault();
-    setError('');
+    setError("");
     setSubmitting(true);
 
     try {
       if (!paymentFormData.amount || !paymentFormData.payment_date) {
-        setError('Please fill in amount and payment date');
+        setError("Please fill in amount and payment date");
         setSubmitting(false);
         return;
       }
@@ -79,23 +84,23 @@ export function BillDetails({ id }) {
       const paymentData = {
         amount: parseFloat(paymentFormData.amount),
         payment_date: new Date(paymentFormData.payment_date).toISOString(),
-        notes: paymentFormData.notes
+        notes: paymentFormData.notes,
       };
 
       await createPayment(id, paymentData);
-      
+
       // Reset form and close modal
       setPaymentFormData({
-        amount: '',
-        payment_date: '',
-        notes: ''
+        amount: "",
+        payment_date: "",
+        notes: "",
       });
       setShowPaymentModal(false);
-      
+
       // Reload data
       await loadBillDetails();
     } catch (error) {
-      setError(error.message || 'Failed to create payment');
+      setError(error.message || "Failed to create payment");
     } finally {
       setSubmitting(false);
     }
@@ -103,11 +108,11 @@ export function BillDetails({ id }) {
 
   const handlePaymentCancel = () => {
     setShowPaymentModal(false);
-    setError('');
+    setError("");
     setPaymentFormData({
-      amount: '',
-      payment_date: '',
-      notes: ''
+      amount: "",
+      payment_date: "",
+      notes: "",
     });
   };
 
@@ -118,7 +123,7 @@ export function BillDetails({ id }) {
 
   const handleDeleteConfirm = async () => {
     if (!paymentToDelete) return;
-    
+
     setDeleting(true);
     try {
       await deletePayment(id, paymentToDelete.id);
@@ -126,8 +131,8 @@ export function BillDetails({ id }) {
       setPaymentToDelete(null);
       await loadBillDetails();
     } catch (error) {
-      console.error('Failed to delete payment:', error);
-      alert('Failed to delete payment');
+      console.error("Failed to delete payment:", error);
+      alert("Failed to delete payment");
     } finally {
       setDeleting(false);
     }
@@ -139,7 +144,7 @@ export function BillDetails({ id }) {
   };
 
   const handleBack = () => {
-    route('/bills');
+    route("/bills");
   };
 
   const formatDate = (dateString) => {
@@ -183,8 +188,8 @@ export function BillDetails({ id }) {
       <div class={`bill-info-card ${getBillStatus(bill)}`}>
         <div class="bill-info-header">
           <h3>{bill.name}</h3>
-          <span class={`status-badge ${bill.is_paid ? 'paid' : 'unpaid'}`}>
-            {bill.is_paid ? 'Paid' : 'Unpaid'}
+          <span class={`status-badge ${bill.is_paid ? "paid" : "unpaid"}`}>
+            {bill.is_paid ? "Paid" : "Unpaid"}
           </span>
         </div>
 
@@ -196,29 +201,44 @@ export function BillDetails({ id }) {
 
           <div class="info-item">
             <label>Due Day</label>
-            <div>{bill.due_day}{getDaySuffix(bill.due_day)} of each month</div>
+            <div>
+              {bill.due_day}
+              {getDaySuffix(bill.due_day)} of each month
+            </div>
           </div>
 
           <div class="info-item">
             <label>Next Due Date</label>
-            <div class={getBillStatus(bill) === 'overdue' ? 'overdue-text' : getBillStatus(bill) === 'due-today' ? 'due-today-text' : ''}>
-              {bill.next_due_date ? formatDate(bill.next_due_date) : 'Not calculated'}
+            <div
+              class={
+                getBillStatus(bill) === "overdue"
+                  ? "overdue-text"
+                  : getBillStatus(bill) === "due-today"
+                  ? "due-today-text"
+                  : ""
+              }
+            >
+              {bill.next_due_date
+                ? formatDate(bill.next_due_date)
+                : "Not calculated"}
             </div>
           </div>
 
           <div class="info-item">
             <label>Last Paid</label>
-            <div>{bill.last_paid_date ? formatDate(bill.last_paid_date) : 'Never'}</div>
+            <div>
+              {bill.last_paid_date ? formatDate(bill.last_paid_date) : "Never"}
+            </div>
           </div>
 
           <div class="info-item">
             <label>Category</label>
-            <div>{bill.category || 'None'}</div>
+            <div>{bill.category || "None"}</div>
           </div>
 
           <div class="info-item">
             <label>Recurring</label>
-            <div>{bill.is_recurring ? 'Yes' : 'No'}</div>
+            <div>{bill.is_recurring ? "Yes" : "No"}</div>
           </div>
 
           {bill.notes && (
@@ -266,14 +286,14 @@ export function BillDetails({ id }) {
                 </tr>
               </thead>
               <tbody>
-                {payments.map(payment => (
+                {payments.map((payment) => (
                   <tr key={payment.id}>
                     <td>{formatDate(payment.payment_date)}</td>
                     <td class="amount-cell">${payment.amount.toFixed(2)}</td>
-                    <td class="notes-cell">{payment.notes || '-'}</td>
+                    <td class="notes-cell">{payment.notes || "-"}</td>
                     <td>{formatDateTime(payment.created_at)}</td>
                     <td>
-                      <button 
+                      <button
                         class="action-btn delete-btn"
                         onClick={() => handleDeletePayment(payment)}
                         title="Delete payment"
@@ -291,8 +311,8 @@ export function BillDetails({ id }) {
         {payments.length > 0 && (
           <div class="payments-summary">
             <div class="summary-item">
-              <strong>Total Payments: </strong>
-              ${payments.reduce((sum, p) => sum + p.amount, 0).toFixed(2)}
+              <strong>Total Payments: </strong>$
+              {payments.reduce((sum, p) => sum + p.amount, 0).toFixed(2)}
             </div>
             <div class="summary-item">
               <strong>Number of Payments: </strong>
@@ -308,9 +328,11 @@ export function BillDetails({ id }) {
           <div class="modal" onClick={(e) => e.stopPropagation()}>
             <div class="modal-header">
               <h3>Add Payment</h3>
-              <button class="close-btn" onClick={handlePaymentCancel}>&times;</button>
+              <button class="close-btn" onClick={handlePaymentCancel}>
+                &times;
+              </button>
             </div>
-            
+
             <form onSubmit={handlePaymentSubmit}>
               <div class="form-group">
                 <label for="payment-amount">Amount *</label>
@@ -354,11 +376,19 @@ export function BillDetails({ id }) {
               {error && <div class="error-message">{error}</div>}
 
               <div class="modal-actions">
-                <button type="button" class="btn btn-secondary" onClick={handlePaymentCancel}>
+                <button
+                  type="button"
+                  class="btn btn-secondary"
+                  onClick={handlePaymentCancel}
+                >
                   Cancel
                 </button>
-                <button type="submit" class="btn btn-primary" disabled={submitting}>
-                  {submitting ? 'Adding...' : 'Add Payment'}
+                <button
+                  type="submit"
+                  class="btn btn-primary"
+                  disabled={submitting}
+                >
+                  {submitting ? "Adding..." : "Add Payment"}
                 </button>
               </div>
             </form>
@@ -369,32 +399,43 @@ export function BillDetails({ id }) {
       {/* Delete Payment Confirmation Modal */}
       {showDeleteConfirm && paymentToDelete && (
         <div class="modal-overlay" onClick={handleDeleteCancel}>
-          <div class="modal modal-small confirm-modal" onClick={(e) => e.stopPropagation()}>
+          <div
+            class="modal modal-small confirm-modal"
+            onClick={(e) => e.stopPropagation()}
+          >
             <div class="modal-header">
               <h3>Delete Payment</h3>
-              <button class="close-btn" onClick={handleDeleteCancel}>&times;</button>
+              <button class="close-btn" onClick={handleDeleteCancel}>
+                &times;
+              </button>
             </div>
-            
+
             <div class="confirm-content">
               <p>Are you sure you want to delete this payment?</p>
               <div class="payment-details">
-                <strong>Amount:</strong> ${paymentToDelete.amount.toFixed(2)}<br />
-                <strong>Date:</strong> {formatDate(paymentToDelete.payment_date)}
+                <strong>Amount:</strong> ${paymentToDelete.amount.toFixed(2)}
+                <br />
+                <strong>Date:</strong>{" "}
+                {formatDate(paymentToDelete.payment_date)}
               </div>
               <p class="warning-text">This action cannot be undone.</p>
             </div>
 
             <div class="modal-actions">
-              <button type="button" class="btn btn-secondary" onClick={handleDeleteCancel}>
+              <button
+                type="button"
+                class="btn btn-secondary"
+                onClick={handleDeleteCancel}
+              >
                 Cancel
               </button>
-              <button 
-                type="button" 
-                class="btn btn-danger" 
+              <button
+                type="button"
+                class="btn btn-danger"
                 onClick={handleDeleteConfirm}
                 disabled={deleting}
               >
-                {deleting ? 'Deleting...' : 'Delete'}
+                {deleting ? "Deleting..." : "Delete"}
               </button>
             </div>
           </div>

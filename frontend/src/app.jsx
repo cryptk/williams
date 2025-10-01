@@ -1,13 +1,13 @@
-import { useState, useEffect } from 'preact/hooks';
-import { Router } from 'preact-router';
-import { Header } from './components/Header';
-import { Auth } from './components/Auth';
-import { Dashboard } from './pages/Dashboard';
-import { Bills } from './pages/Bills';
-import { BillDetails } from './pages/BillDetails';
-import { Categories } from './pages/Categories';
-import { NotFound } from './pages/NotFound';
-import { initCardShadows } from './utils/cardEffects';
+import { useState, useEffect } from "preact/hooks";
+import { Router } from "preact-router";
+import { Header } from "./components/Header";
+import { Auth } from "./components/Auth";
+import { Dashboard } from "./pages/Dashboard";
+import { Bills } from "./pages/Bills";
+import { BillDetails } from "./pages/BillDetails";
+import { Categories } from "./pages/Categories";
+import { NotFound } from "./pages/NotFound";
+import { initCardShadows } from "./utils/cardEffects";
 
 export function App() {
   const [user, setUser] = useState(null);
@@ -15,16 +15,16 @@ export function App() {
 
   useEffect(() => {
     // Check if user is already logged in
-    const token = localStorage.getItem('token');
-    const storedUser = localStorage.getItem('user');
-    
+    const token = localStorage.getItem("token");
+    const storedUser = localStorage.getItem("user");
+
     if (token && storedUser) {
       try {
         setUser(JSON.parse(storedUser));
       } catch (e) {
-        console.error('Failed to parse user data');
-        localStorage.removeItem('token');
-        localStorage.removeItem('user');
+        console.error("Failed to parse user data");
+        localStorage.removeItem("token");
+        localStorage.removeItem("user");
       }
     }
     setLoading(false);
@@ -43,8 +43,8 @@ export function App() {
   };
 
   const handleLogout = () => {
-    localStorage.removeItem('token');
-    localStorage.removeItem('user');
+    localStorage.removeItem("token");
+    localStorage.removeItem("user");
     setUser(null);
   };
 

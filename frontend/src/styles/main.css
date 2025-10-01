@@ -17,7 +17,8 @@
 }
 
 body {
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen,
+    Ubuntu, sans-serif;
   color: var(--text-color);
   background-color: var(--bg-color);
   line-height: 1.6;
@@ -300,7 +301,6 @@ body {
   color: var(--success-color);
 }
 
-
 .status {
   padding: 0.25rem 0.75rem;
   border-radius: 20px;
@@ -391,7 +391,6 @@ body {
   transform: scale(1.1);
 }
 
-
 /* Color Picker */
 .color-palette {
   display: grid;
@@ -452,7 +451,6 @@ body {
   max-width: 450px;
 }
 
-
 /* Empty State */
 .empty-state {
   text-align: center;
@@ -489,7 +487,11 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+  background: linear-gradient(
+    135deg,
+    var(--primary-color),
+    var(--secondary-color)
+  );
   padding: 2rem;
 }
 
@@ -830,8 +832,6 @@ body {
   font-size: 1rem;
 }
 
-
-
 /* Bill Card Enhancements */
 .bill-card .category {
   display: inline-block;
@@ -1113,28 +1113,28 @@ body {
   .bill-info-grid {
     grid-template-columns: 1fr;
   }
-  
+
   .bill-info-header {
     flex-direction: column;
     align-items: flex-start;
     gap: 1rem;
   }
-  
+
   .section-header {
     flex-direction: column;
     align-items: flex-start;
     gap: 1rem;
   }
-  
+
   .payments-table-container {
     font-size: 0.85rem;
   }
-  
+
   .payments-table th,
   .payments-table td {
     padding: 0.75rem 0.5rem;
   }
-  
+
   .payments-summary {
     grid-template-columns: 1fr;
   }
@@ -1145,19 +1145,18 @@ body {
   .bill-details {
     margin: 0 -1rem;
   }
-  
+
   .bill-info-card,
   .payments-section {
     margin: 0 1rem 2rem 1rem;
     padding: 1.5rem;
   }
-  
+
   .amount-display {
     font-size: 1.5rem !important;
   }
-  
+
   .bill-info-header h3 {
     font-size: 1.5rem;
   }
 }
-

@@ -13,7 +13,7 @@ export function getDaySuffix(day) {
 }
 
 export function getBillStatus(bill) {
-  if (!bill) return "normal";
+  if (bill == null) return "normal";
   if (bill.is_paid) return "normal";
   if (!bill.next_due_date) return "normal";
 
