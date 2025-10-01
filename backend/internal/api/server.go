@@ -106,6 +106,37 @@ func NewServer(cfg *config.Config, db *database.DB) *Server {
 
 // setupRoutes configures all API routes
 func (s *Server) setupRoutes() {
+
+	// Serve static frontend assets if they exist
+	s.router.NoRoute(func(c *gin.Context) {
+		// Only handle GET and HEAD for static assets
+		if c.Request.Method != http.MethodGet && c.Request.Method != http.MethodHead {
+			c.Next()
+			return
+		}
+
+		// Try to serve static files from build/dist
+		staticDir := "build/dist"
+		filePath := staticDir + c.Request.URL.Path
+		// If requesting "/", serve index.html
+		if c.Request.URL.Path == "/" {
+			filePath = staticDir + "/index.html"
+		}
+
+		// Try to open the file
+		if _, err := http.Dir(staticDir).Open(c.Request.URL.Path[1:]); err == nil {
+			c.File(filePath)
+			return
+		}
+		// Fallback: if not found, serve index.html for SPA routes (except for actual missing files)
+		if c.Request.URL.Path != "/" {
+			c.File(staticDir + "/index.html")
+			return
+		}
+		// If index.html is missing, return 404
+		c.AbortWithStatus(http.StatusNotFound)
+	})
+
 	// Health check
 	s.router.GET("/health", s.healthCheck)
 
