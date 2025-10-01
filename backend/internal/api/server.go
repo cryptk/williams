@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"net/http"
+	"path/filepath"
 	"time"
 
 	"github.com/cryptk/williams/internal/api/middleware"
@@ -107,34 +108,43 @@ func NewServer(cfg *config.Config, db *database.DB) *Server {
 // setupRoutes configures all API routes
 func (s *Server) setupRoutes() {
 
-	// Serve static frontend assets if they exist
+	// Serve static frontend assets securely
 	s.router.NoRoute(func(c *gin.Context) {
-		// Only handle GET and HEAD for static assets
 		if c.Request.Method != http.MethodGet && c.Request.Method != http.MethodHead {
 			c.Next()
 			return
 		}
 
-		// Try to serve static files from build/dist
 		staticDir := "build/dist"
-		filePath := staticDir + c.Request.URL.Path
+		requestPath := c.Request.URL.Path
+
 		// If requesting "/", serve index.html
-		if c.Request.URL.Path == "/" {
-			filePath = staticDir + "/index.html"
+		if requestPath == "/" {
+			c.File(filepath.Join(staticDir, "index.html"))
+			return
+		}
+
+		// Clean the path to prevent path traversal
+		cleanPath := filepath.Clean(filepath.Join("/", requestPath)) // ensure leading slash
+		// Remove leading slash for http.Dir
+		relativePath := cleanPath[1:]
+
+		// Ensure the resolved path stays within staticDir
+		fullPath := filepath.Join(staticDir, relativePath)
+		absStaticDir, err1 := filepath.Abs(staticDir)
+		absFullPath, err2 := filepath.Abs(fullPath)
+		if err1 != nil || err2 != nil || len(absFullPath) < len(absStaticDir) || absFullPath[:len(absStaticDir)] != absStaticDir {
+			c.AbortWithStatus(http.StatusForbidden)
+			return
 		}
 
 		// Try to open the file
-		if _, err := http.Dir(staticDir).Open(c.Request.URL.Path[1:]); err == nil {
-			c.File(filePath)
+		if _, err := http.Dir(staticDir).Open(relativePath); err == nil {
+			c.File(filepath.Join(staticDir, relativePath))
 			return
 		}
 		// Fallback: if not found, serve index.html for SPA routes (except for actual missing files)
-		if c.Request.URL.Path != "/" {
-			c.File(staticDir + "/index.html")
-			return
-		}
-		// If index.html is missing, return 404
-		c.AbortWithStatus(http.StatusNotFound)
+		c.File(filepath.Join(staticDir, "index.html"))
 	})
 
 	// Health check
@@ -189,7 +199,12 @@ func (s *Server) setupRoutes() {
 
 // Start starts the HTTP server
 func (s *Server) Start() error {
-	addr := fmt.Sprintf("%s:%d", s.config.Server.Host, s.config.Server.Port)
+	// If Host is empty, bind to all interfaces (equivalent to "0.0.0.0")
+	host := s.config.Server.Host
+	if host == "" {
+		host = "0.0.0.0"
+	}
+	addr := fmt.Sprintf("%s:%d", host, s.config.Server.Port)
 
 	s.httpServer = &http.Server{
 		Addr:           addr,

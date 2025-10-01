@@ -9,7 +9,7 @@ build: build/frontend build/backend
 build/frontend:
 	rm -rf build/dist
 	cd frontend && npm install
-	cd frontend && npm run build
+	cd frontend && npm run build -- --emptyOutDir --outDir ../build/dist
 
 build/backend: clean/backend
 	mkdir -p build
