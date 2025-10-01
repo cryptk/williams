@@ -1,0 +1,36 @@
+# Ignore backend binaries and temporary files
+/backend/williams
+/backend/server
+
+# Ignore frontend dependencies (scoped)
+frontend/node_modules/
+
+# Ignore build output
+build/
+frontend/dist/
+
+# Config (keep examples)
+/backend/configs/config.yaml
+!/backend/configs/config.example.yaml
+
+# Database
+*.db
+*.sqlite
+*.sqlite3
+
+# Logs
+*.log
+
+# Test output
+coverage/
+*.out
+
+# OS/Editor temp files
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+
+# IDE and meta
+.vscode
+.github

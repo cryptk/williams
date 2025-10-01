@@ -4,6 +4,9 @@ import (
 	"context"
 	"fmt"
 	"net/http"
+	"os"
+	"path/filepath"
+	"strings"
 	"time"
 
 	"github.com/cryptk/williams/internal/api/middleware"
@@ -106,6 +109,52 @@ func NewServer(cfg *config.Config, db *database.DB) *Server {
 
 // setupRoutes configures all API routes
 func (s *Server) setupRoutes() {
+
+	// Serve static frontend assets securely
+	s.router.NoRoute(func(c *gin.Context) {
+		if c.Request.Method != http.MethodGet && c.Request.Method != http.MethodHead {
+			c.Next()
+			return
+		}
+
+		staticDir := "build/dist"
+		requestPath := c.Request.URL.Path
+
+		// If requesting "/", serve index.html
+		if requestPath == "/" {
+			c.File(filepath.Join(staticDir, "index.html"))
+			return
+		}
+
+		// Clean the path to prevent path traversal
+		cleanPath := filepath.Clean(filepath.Join("/", requestPath)) // ensure leading slash
+		// Remove leading slash for http.Dir
+		relativePath := cleanPath[1:]
+
+		// Ensure the resolved path stays within staticDir using filepath.Rel
+		fullPath := filepath.Join(staticDir, relativePath)
+		absStaticDir, err1 := filepath.Abs(staticDir)
+		absFullPath, err2 := filepath.Abs(fullPath)
+		if err1 != nil || err2 != nil {
+			c.AbortWithStatus(http.StatusForbidden)
+			return
+		}
+		rel, err := filepath.Rel(absStaticDir, absFullPath)
+		if err != nil || strings.HasPrefix(rel, "..") || filepath.IsAbs(rel) {
+			c.AbortWithStatus(http.StatusForbidden)
+			return
+		}
+
+		// Check if the file exists using os.Stat (more efficient than opening twice)
+		fileToServe := filepath.Join(staticDir, relativePath)
+		if info, err := os.Stat(fileToServe); err == nil && !info.IsDir() {
+			c.File(fileToServe)
+			return
+		}
+		// Fallback: if not found, serve index.html for SPA routes (except for actual missing files)
+		c.File(filepath.Join(staticDir, "index.html"))
+	})
+
 	// Health check
 	s.router.GET("/health", s.healthCheck)
 
@@ -158,7 +207,12 @@ func (s *Server) setupRoutes() {
 
 // Start starts the HTTP server
 func (s *Server) Start() error {
-	addr := fmt.Sprintf("%s:%d", s.config.Server.Host, s.config.Server.Port)
+	// If Host is empty, bind to all interfaces (equivalent to "0.0.0.0")
+	host := s.config.Server.Host
+	if host == "" {
+		host = "0.0.0.0"
+	}
+	addr := fmt.Sprintf("%s:%d", host, s.config.Server.Port)
 
 	s.httpServer = &http.Server{
 		Addr:           addr,
