@@ -1,9 +1,6 @@
-version: '3.8'
-
 services:
   williams:
     build: .
-    image: williams-app:latest
     container_name: williams
     ports:
       - "8080:8080"
