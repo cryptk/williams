@@ -6,6 +6,7 @@ import (
 	"github.com/cryptk/williams/internal/models"
 	"github.com/cryptk/williams/pkg/utils"
 	"github.com/gin-gonic/gin"
+	"github.com/rs/zerolog/log"
 )
 
 // Bill handlers
@@ -16,6 +17,7 @@ func (s *Server) listBills(c *gin.Context) {
 
 	bills, err := s.billService.ListBillsByUser(userID.(string))
 	if err != nil {
+		log.Error().Err(err).Str("user_id", userID.(string)).Msg("Failed to list bills")
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
@@ -57,6 +59,7 @@ func (s *Server) createBill(c *gin.Context) {
 	bill.UserID = userID.(string)
 
 	if err := s.billService.CreateBill(&bill); err != nil {
+		log.Error().Err(err).Str("user_id", userID.(string)).Msg("Failed to create bill")
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
@@ -80,6 +83,7 @@ func (s *Server) updateBill(c *gin.Context) {
 	bill.UserID = userID.(string)
 
 	if err := s.billService.UpdateBillByUser(&bill, userID.(string)); err != nil {
+		log.Error().Err(err).Str("user_id", userID.(string)).Str("bill_id", id).Msg("Failed to update bill")
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
@@ -93,6 +97,7 @@ func (s *Server) deleteBill(c *gin.Context) {
 	userID, _ := c.Get("user_id")
 
 	if err := s.billService.DeleteBillByUser(id, userID.(string)); err != nil {
+		log.Error().Err(err).Str("user_id", userID.(string)).Str("bill_id", id).Msg("Failed to delete bill")
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
@@ -111,6 +116,7 @@ func (s *Server) listCategories(c *gin.Context) {
 
 	categories, err := s.categoryService.ListCategoriesByUser(userID.(string))
 	if err != nil {
+		log.Error().Err(err).Str("user_id", userID.(string)).Msg("Failed to list categories")
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
@@ -134,6 +140,7 @@ func (s *Server) createCategory(c *gin.Context) {
 	category.UserID = userID.(string)
 
 	if err := s.categoryService.CreateCategory(&category); err != nil {
+		log.Error().Err(err).Str("user_id", userID.(string)).Msg("Failed to create category")
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
@@ -147,6 +154,7 @@ func (s *Server) deleteCategory(c *gin.Context) {
 	userID, _ := c.Get("user_id")
 
 	if err := s.categoryService.DeleteCategoryByUser(id, userID.(string)); err != nil {
+		log.Error().Err(err).Str("user_id", userID.(string)).Str("category_id", id).Msg("Failed to delete category")
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
@@ -165,6 +173,7 @@ func (s *Server) getStatsSummary(c *gin.Context) {
 
 	stats, err := s.billService.GetStatsByUser(userID.(string))
 	if err != nil {
+		log.Error().Err(err).Str("user_id", userID.(string)).Msg("Failed to get stats")
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
@@ -191,6 +200,7 @@ func (s *Server) createPayment(c *gin.Context) {
 	payment.PaymentDate = utils.ConvertToAppTimezone(payment.PaymentDate)
 
 	if err := s.billService.CreatePaymentByUser(&payment, userID.(string)); err != nil {
+		log.Error().Err(err).Str("user_id", userID.(string)).Str("bill_id", billID).Msg("Failed to create payment")
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
@@ -205,6 +215,7 @@ func (s *Server) listPayments(c *gin.Context) {
 
 	payments, err := s.billService.GetPaymentsByBillAndUser(billID, userID.(string))
 	if err != nil {
+		log.Error().Err(err).Str("user_id", userID.(string)).Str("bill_id", billID).Msg("Failed to list payments")
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
@@ -221,6 +232,7 @@ func (s *Server) deletePayment(c *gin.Context) {
 	userID, _ := c.Get("user_id")
 
 	if err := s.billService.DeletePaymentByUser(paymentID, userID.(string)); err != nil {
+		log.Error().Err(err).Str("user_id", userID.(string)).Str("payment_id", paymentID).Msg("Failed to delete payment")
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}

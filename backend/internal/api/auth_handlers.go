@@ -5,6 +5,7 @@ import (
 
 	"github.com/cryptk/williams/internal/models"
 	"github.com/gin-gonic/gin"
+	"github.com/rs/zerolog/log"
 )
 
 // Auth handlers
@@ -18,9 +19,12 @@ func (s *Server) register(c *gin.Context) {
 
 	user, err := s.authService.Register(&req)
 	if err != nil {
+		log.Warn().Err(err).Str("username", req.Username).Msg("Registration failed")
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
+
+	log.Info().Str("user_id", user.ID).Str("username", user.Username).Msg("User registered successfully")
 
 	// Generate token for the new user
 	token, _, err := s.authService.Login(&models.LoginRequest{
@@ -28,6 +32,7 @@ func (s *Server) register(c *gin.Context) {
 		Password: req.Password,
 	})
 	if err != nil {
+		log.Error().Err(err).Str("user_id", user.ID).Msg("Failed to generate token after registration")
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to generate token"})
 		return
 	}
@@ -47,9 +52,12 @@ func (s *Server) login(c *gin.Context) {
 
 	token, user, err := s.authService.Login(&req)
 	if err != nil {
+		log.Warn().Err(err).Str("username", req.Username).Msg("Login failed")
 		c.JSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
 		return
 	}
+
+	log.Info().Str("user_id", user.ID).Str("username", user.Username).Msg("User logged in successfully")
 
 	c.JSON(http.StatusOK, models.AuthResponse{
 		Token: token,

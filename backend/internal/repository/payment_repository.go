@@ -77,7 +77,7 @@ func (r *paymentRepository) DeleteByUser(id string, userID string) error {
 		Where("payments.id = ? AND bills.user_id = ?", id, userID).
 		First(&payment).Error; err != nil {
 		if err == gorm.ErrRecordNotFound {
-			return fmt.Errorf("payment not found or access denied")
+			return fmt.Errorf("payment not found for specified user")
 		}
 		return err
 	}

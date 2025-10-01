@@ -8,6 +8,7 @@ import (
 	"github.com/cryptk/williams/internal/models"
 	"github.com/cryptk/williams/internal/repository"
 	"github.com/golang-jwt/jwt/v5"
+	"github.com/rs/zerolog/log"
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -60,7 +61,7 @@ func (s *AuthService) Register(req *models.RegisterRequest) (*models.User, error
 	if err := s.categoryRepo.CreateDefaultCategories(user.ID); err != nil {
 		// Log the error but don't fail registration
 		// The user can create categories manually if this fails
-		fmt.Printf("Warning: failed to create default categories for user %s: %v\n", user.ID, err)
+		log.Warn().Err(err).Str("user_id", user.ID).Msg("Failed to create default categories for user")
 	}
 
 	return user, nil

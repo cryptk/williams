@@ -53,14 +53,73 @@ williams/
 │   ├── index.html
 │   ├── package.json
 │   └── vite.config.js
-├── docs/                        # Documentation
-│   ├── backend/                 # Backend-specific docs
-│   └── frontend/                # Frontend-specific docs
+├── docs/                        # User-facing documentation
+│   ├── backend/                 # Backend usage guides
+│   └── frontend/                # Frontend usage guides
 ├── .github/
-│   └── copilot-instructions.md
+│   ├── copilot-instructions.md
+│   └── copilot/
+│       └── architectural_references/  # Implementation details & decisions (for Copilot)
 ├── .gitignore
 └── README.md
 ```
+
+## Documentation Structure
+
+### User-Facing Documentation (`docs/`)
+- **Purpose**: How to use, configure, and work with features
+- **Audience**: Developers working on the project
+- **Examples**: Configuration guides, API usage, troubleshooting
+- **Location**: `docs/backend/` and `docs/frontend/`
+- **Style**: Concise API reference format
+  - Quick reference for configuration options
+  - Brief usage examples
+  - Minimal explanatory text
+  - Focus on "what" and "how to use"
+
+### Architectural References (`.github/copilot/architectural_references/`)
+- **Purpose**: Implementation details, architectural decisions, design rationale
+- **Audience**: Copilot (for context on why/how things were built)
+- **Examples**: Architecture explanations, trade-off discussions, implementation specifics
+- **Location**: `.github/copilot/architectural_references/`
+- **Style**: Prescriptive architectural guidance
+  - **What**: Explain the current implementation and architecture
+  - **Why**: Reasoning behind architectural decisions
+  - **How**: Usage patterns with code examples
+  - **Examples**: Include ✅ correct patterns and ❌ common mistakes
+  - **Focus on present state**, not historical changes
+  - Avoid past-tense narrative like "Successfully migrated from..." or "Before/After" comparisons
+  - Don't document what was changed; document what should be done
+
+#### Writing Architectural References
+
+When creating architectural reference documentation:
+
+1. **Start with "Why"**: Explain the reasoning for the architectural decision
+2. **Describe "What"**: Current implementation details and structure
+3. **Show "How"**: Usage patterns with concrete code examples
+4. **Highlight correct patterns**: Use ✅ to show proper usage
+5. **Note common pitfalls**: Use ❌ to show what NOT to do (only when necessary to avoid problems)
+6. **Provide context**: Explain when to use certain patterns over others
+7. **Include references**: Link to external documentation or resources
+
+**❌ Avoid:**
+- Past-tense migration narrative ("Successfully migrated Williams from...")
+- "Before/After" comparison sections
+- "Changes Made" or "Migration Checklist" sections
+- Historical context about what used to be in the codebase
+- References to previous implementations
+
+**✅ Do:**
+- Write in present tense about current architecture
+- Focus on what should be done and why
+- Provide examples of correct implementation
+- Explain trade-offs and design decisions
+- Include troubleshooting for common issues
+
+**Document Separation:**
+- Put "how to use" guides in `docs/`
+- Put "why/how it was built" architectural details in `.github/copilot/architectural_references/`
 
 ## Configuration Management
 
@@ -168,6 +227,14 @@ database:
 5. Follow Go naming conventions and idioms
 6. Use Go modules for dependency management
 7. All timestamps use application timezone (configured in config.yaml)
+8. Use structured logging with zerolog (see `docs/backend/LOGGING.md`)
+
+### Logging
+- **Package**: `github.com/rs/zerolog/log`
+- **Usage**: `log.Info().Str("user_id", userID).Msg("User action")`
+- **Levels**: debug, info, warn, error, fatal
+- **Configuration**: Set via `config.yaml` or environment variables
+- **Documentation**: `docs/backend/LOGGING.md`
 
 ### Frontend
 1. Keep components small and focused

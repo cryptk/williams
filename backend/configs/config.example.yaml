@@ -13,8 +13,8 @@ bills:
   payment_grace_days: 7  # Number of days before next due date to consider a recurring bill as paid
 
 logging:
-  level: info
-  format: json
+  level: info  # debug, info, warn, error, fatal, panic, disabled
+  format: json  # json or console (console for human-readable output during development)
 
 # Timezone for date/time storage and calculations
 # Use IANA timezone format (e.g., "America/New_York", "America/Chicago", "UTC")

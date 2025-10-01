@@ -67,7 +67,7 @@ func (r *billRepository) UpdateByUser(bill *models.Bill, userID string) error {
 	var existing models.Bill
 	if err := r.db.First(&existing, "id = ? AND user_id = ?", bill.ID, userID).Error; err != nil {
 		if err == gorm.ErrRecordNotFound {
-			return fmt.Errorf("bill not found or access denied")
+			return fmt.Errorf("bill not found for specified user")
 		}
 		return err
 	}
@@ -87,7 +87,7 @@ func (r *billRepository) DeleteByUser(id string, userID string) error {
 		return result.Error
 	}
 	if result.RowsAffected == 0 {
-		return fmt.Errorf("bill not found or access denied")
+		return fmt.Errorf("bill not found for specified user")
 	}
 	return nil
 }

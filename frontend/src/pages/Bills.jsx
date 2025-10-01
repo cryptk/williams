@@ -11,10 +11,9 @@ import {
   deletePayment,
 } from "../services/api";
 import { getBillStatus, getDaySuffix } from "../utils/helpers";
-import { useToast } from "../components/Toast";
+import { toast } from "../components/Toast";
 
 export function Bills() {
-  const { showError, showSuccess, showInfo } = useToast();
   const [bills, setBills] = useState([]);
   const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -31,7 +30,7 @@ export function Bills() {
     name: "",
     amount: "",
     due_day: "",
-    category: "",
+    category_id: "",
     is_paid: false,
     is_recurring: true,
     notes: "",
@@ -89,7 +88,7 @@ export function Bills() {
         name: formData.name,
         amount: parseFloat(formData.amount),
         due_day: parseInt(formData.due_day),
-        category: formData.category,
+        category_id: formData.category_id || null,
         is_recurring: formData.is_recurring,
         notes: formData.notes,
       };
@@ -98,11 +97,11 @@ export function Bills() {
         // Update existing bill - preserve user_id
         billData.user_id = editingBill.user_id;
         await updateBill(editingBill.id, billData);
-        showSuccess("Bill updated successfully!");
+        toast.success("Bill updated successfully!");
       } else {
         // Create new bill
         await createBill(billData);
-        showSuccess("Bill created successfully!");
+        toast.success("Bill created successfully!");
       }
 
       // Reset form and close modal
@@ -110,7 +109,7 @@ export function Bills() {
         name: "",
         amount: "",
         due_day: "",
-        category: "",
+        category_id: "",
         is_paid: false,
         is_recurring: true,
         notes: "",
@@ -122,6 +121,9 @@ export function Bills() {
       await loadBills();
     } catch (error) {
       setError(
+        error.message || `Failed to ${editingBill ? "update" : "create"} bill`
+      );
+      toast.error(
         error.message || `Failed to ${editingBill ? "update" : "create"} bill`
       );
     } finally {
@@ -150,7 +152,7 @@ export function Bills() {
       name: bill.name,
       amount: bill.amount.toString(),
       due_day: bill.due_day.toString(),
-      category: bill.category || "",
+      category_id: bill.category_id || "",
       is_paid: bill.is_paid,
       is_recurring: bill.is_recurring,
       notes: bill.notes || "",
@@ -176,10 +178,10 @@ export function Bills() {
       };
       await createPayment(bill.id, paymentData);
       await loadBills();
-      showSuccess("Payment recorded successfully!");
+      toast.success("Payment recorded successfully!");
     } catch (error) {
       console.error("Failed to record payment:", error);
-      showError("Failed to record payment. Please try again.");
+      toast.error("Failed to record payment. Please try again.");
     }
   };
 
@@ -199,10 +201,10 @@ export function Bills() {
       setShowPaymentActions(false);
       setSelectedBillForPayment(null);
       await loadBills();
-      showSuccess("Next payment recorded successfully!");
+      toast.success("Next payment recorded successfully!");
     } catch (error) {
       console.error("Failed to record payment:", error);
-      showError("Failed to record payment. Please try again.");
+      toast.error("Failed to record payment. Please try again.");
     } finally {
       setSubmitting(false);
     }
@@ -218,7 +220,7 @@ export function Bills() {
       const payments = paymentsData.payments || [];
 
       if (payments.length === 0) {
-        showInfo("No payments found to delete");
+        toast.info("No payments found to delete");
         return;
       }
 
@@ -230,10 +232,10 @@ export function Bills() {
       setShowPaymentActions(false);
       setSelectedBillForPayment(null);
       await loadBills();
-      showSuccess("Last payment deleted successfully!");
+      toast.success("Last payment deleted successfully!");
     } catch (error) {
       console.error("Failed to delete payment:", error);
-      showError("Failed to delete payment. Please try again.");
+      toast.error("Failed to delete payment. Please try again.");
     } finally {
       setDeleting(false);
     }
@@ -258,10 +260,10 @@ export function Bills() {
       setShowDeleteConfirm(false);
       setBillToDelete(null);
       await loadBills();
-      showSuccess("Bill deleted successfully!");
+      toast.success("Bill deleted successfully!");
     } catch (error) {
       console.error("Failed to delete bill:", error);
-      showError("Failed to delete bill. Please try again.");
+      toast.error("Failed to delete bill. Please try again.");
     } finally {
       setDeleting(false);
     }
@@ -335,7 +337,11 @@ export function Bills() {
                   {new Date(bill.last_paid_date).toLocaleDateString()}
                 </p>
               )}
-              {bill.category && <p class="category">{bill.category}</p>}
+              {bill.category_id && (
+                <p class="category">
+                  {categories.find((cat) => cat.id === bill.category_id)?.name || "Unknown Category"}
+                </p>
+              )}
               {bill.notes && <p class="notes">{bill.notes}</p>}
               <div class="bill-footer">
                 <span class={`status ${bill.is_paid ? "paid" : "unpaid"}`}>
@@ -413,16 +419,16 @@ export function Bills() {
               </div>
 
               <div class="form-group">
-                <label for="category">Category</label>
+                <label htmlFor="category_id">Category</label>
                 <select
-                  id="category"
-                  name="category"
-                  value={formData.category}
+                  id="category_id"
+                  name="category_id"
+                  value={formData.category_id}
                   onChange={handleInputChange}
                 >
                   <option value="">Select a category</option>
                   {categories.map((cat) => (
-                    <option key={cat.id} value={cat.name}>
+                    <option key={cat.id} value={cat.id}>
                       {cat.name}
                     </option>
                   ))}

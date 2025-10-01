@@ -50,7 +50,7 @@ func (r *categoryRepository) DeleteByUser(id string, userID string) error {
 		return result.Error
 	}
 	if result.RowsAffected == 0 {
-		return fmt.Errorf("category not found or access denied")
+		return fmt.Errorf("category not found for specified user")
 	}
 	return nil
 }

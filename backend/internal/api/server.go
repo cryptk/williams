@@ -12,6 +12,7 @@ import (
 	"github.com/cryptk/williams/internal/repository"
 	"github.com/cryptk/williams/internal/services"
 	"github.com/gin-gonic/gin"
+	"github.com/rs/zerolog/log"
 )
 
 // Server represents the API server
@@ -26,7 +27,43 @@ type Server struct {
 
 // NewServer creates a new API server
 func NewServer(cfg *config.Config, db *database.DB) *Server {
-	router := gin.Default()
+	// Set gin mode based on log level
+	if cfg.Logging.Level == "debug" {
+		gin.SetMode(gin.DebugMode)
+	} else {
+		gin.SetMode(gin.ReleaseMode)
+	}
+
+	router := gin.New()
+
+	// Add request logging middleware
+	router.Use(func(c *gin.Context) {
+		start := time.Now()
+		path := c.Request.URL.Path
+		raw := c.Request.URL.RawQuery
+
+		c.Next()
+
+		latency := time.Since(start)
+		clientIP := c.ClientIP()
+		method := c.Request.Method
+		statusCode := c.Writer.Status()
+
+		if raw != "" {
+			path = path + "?" + raw
+		}
+
+		log.Info().
+			Str("method", method).
+			Str("path", path).
+			Int("status", statusCode).
+			Dur("latency", latency).
+			Str("client_ip", clientIP).
+			Msg("HTTP request")
+	})
+
+	// Add recovery middleware
+	router.Use(gin.Recovery())
 
 	// Enable CORS for frontend
 	router.Use(func(c *gin.Context) {

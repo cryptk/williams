@@ -1,13 +1,13 @@
 package database
 
 import (
+	"context"
 	"fmt"
-	"log"
-	"os"
 	"strings"
 	"time"
 
 	"github.com/cryptk/williams/internal/config"
+	"github.com/rs/zerolog/log"
 	"gorm.io/driver/mysql"
 	"gorm.io/driver/postgres"
 	"gorm.io/driver/sqlite"
@@ -19,6 +19,68 @@ import (
 type DB struct {
 	*gorm.DB
 	Driver string
+}
+
+// zerologGormLogger is a GORM logger implementation using zerolog
+type zerologGormLogger struct {
+	SlowThreshold             time.Duration
+	IgnoreRecordNotFoundError bool
+}
+
+// LogMode implements gorm logger.Interface
+func (l *zerologGormLogger) LogMode(level logger.LogLevel) logger.Interface {
+	return l
+}
+
+// Info implements gorm logger.Interface
+func (l *zerologGormLogger) Info(ctx context.Context, msg string, data ...interface{}) {
+	log.Info().Msgf(msg, data...)
+}
+
+// Warn implements gorm logger.Interface
+func (l *zerologGormLogger) Warn(ctx context.Context, msg string, data ...interface{}) {
+	log.Warn().Msgf(msg, data...)
+}
+
+// Error implements gorm logger.Interface
+func (l *zerologGormLogger) Error(ctx context.Context, msg string, data ...interface{}) {
+	log.Error().Msgf(msg, data...)
+}
+
+// Trace implements gorm logger.Interface
+func (l *zerologGormLogger) Trace(ctx context.Context, begin time.Time, fc func() (string, int64), err error) {
+	elapsed := time.Since(begin)
+	sql, rows := fc()
+
+	if err != nil {
+		// Skip logging if it's a "record not found" error and we're configured to ignore it
+		if l.IgnoreRecordNotFoundError && err.Error() == "record not found" {
+			return
+		}
+
+		log.Error().
+			Err(err).
+			Dur("elapsed", elapsed).
+			Int64("rows", rows).
+			Str("sql", sql).
+			Msg("Database query error")
+		return
+	}
+
+	if elapsed > l.SlowThreshold && l.SlowThreshold != 0 {
+		log.Warn().
+			Dur("elapsed", elapsed).
+			Dur("threshold", l.SlowThreshold).
+			Int64("rows", rows).
+			Str("sql", sql).
+			Msg("Slow query detected")
+	} else {
+		log.Debug().
+			Dur("elapsed", elapsed).
+			Int64("rows", rows).
+			Str("sql", sql).
+			Msg("Database query")
+	}
 }
 
 // New creates a new database connection based on the configuration
@@ -50,15 +112,10 @@ func New(cfg *config.DatabaseConfig) (*DB, error) {
 	}
 
 	db, err := gorm.Open(dialector, &gorm.Config{
-		Logger: logger.New(
-			log.New(os.Stdout, "\r\n", log.LstdFlags),
-			logger.Config{
-				SlowThreshold:             200 * time.Millisecond,
-				LogLevel:                  logger.Info,
-				IgnoreRecordNotFoundError: true, // Don't log ErrRecordNotFound
-				Colorful:                  true,
-			},
-		),
+		Logger: &zerologGormLogger{
+			SlowThreshold:             200 * time.Millisecond,
+			IgnoreRecordNotFoundError: true, // Don't log "record not found" errors (expected in normal operation)
+		},
 	})
 	if err != nil {
 		return nil, fmt.Errorf("failed to connect to database: %w", err)
