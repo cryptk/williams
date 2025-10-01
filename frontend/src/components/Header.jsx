@@ -1,4 +1,4 @@
-import { Link } from 'preact-router/match';
+import { Link } from "preact-router/match";
 
 export function Header({ user, onLogout }) {
   return (
@@ -6,12 +6,20 @@ export function Header({ user, onLogout }) {
       <div class="container">
         <h1 class="logo">💵 Williams</h1>
         <nav class="nav">
-          <Link activeClassName="active" href="/">Dashboard</Link>
-          <Link activeClassName="active" href="/bills">Bills</Link>
-          <Link activeClassName="active" href="/categories">Categories</Link>
+          <Link activeClassName="active" href="/">
+            Dashboard
+          </Link>
+          <Link activeClassName="active" href="/bills">
+            Bills
+          </Link>
+          <Link activeClassName="active" href="/categories">
+            Categories
+          </Link>
           <div class="user-menu">
             <span class="username">{user.username}</span>
-            <button class="btn-logout" onClick={onLogout}>Logout</button>
+            <button class="btn-logout" onClick={onLogout}>
+              Logout
+            </button>
           </div>
         </nav>
       </div>

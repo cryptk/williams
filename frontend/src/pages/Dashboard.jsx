@@ -1,5 +1,5 @@
-import { useState, useEffect } from 'preact/hooks';
-import { getStats } from '../services/api';
+import { useState, useEffect } from "preact/hooks";
+import { getStats } from "../services/api";
 
 export function Dashboard() {
   const [stats, setStats] = useState(null);
@@ -14,7 +14,7 @@ export function Dashboard() {
       const data = await getStats();
       setStats(data);
     } catch (error) {
-      console.error('Failed to load stats:', error);
+      console.error("Failed to load stats:", error);
     } finally {
       setLoading(false);
     }
@@ -34,11 +34,11 @@ export function Dashboard() {
         </div>
         <div class="stat-card">
           <h3>Total Amount</h3>
-          <p class="stat-value">${stats?.total_amount?.toFixed(2) || '0.00'}</p>
+          <p class="stat-value">${stats?.total_amount?.toFixed(2) || "0.00"}</p>
         </div>
-        <div class={`stat-card ${stats?.due_amount > 0 ? 'highlight' : ''}`}>
+        <div class={`stat-card ${stats?.due_amount > 0 ? "highlight" : ""}`}>
           <h3>Amount Due</h3>
-          <p class="stat-value">${stats?.due_amount?.toFixed(2) || '0.00'}</p>
+          <p class="stat-value">${stats?.due_amount?.toFixed(2) || "0.00"}</p>
         </div>
         <div class="stat-card">
           <h3>Paid Bills</h3>

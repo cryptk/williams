@@ -57,7 +57,7 @@ func (r *billRepository) GetByID(id string) (*models.Bill, error) {
 // List retrieves all bills
 func (r *billRepository) List() ([]*models.Bill, error) {
 	var bills []*models.Bill
-	if err := r.db.Order("due_day ASC").Find(&bills).Error; err != nil {
+	if err := r.db.Order("name ASC").Find(&bills).Error; err != nil {
 		return nil, err
 	}
 	return bills, nil
@@ -66,7 +66,7 @@ func (r *billRepository) List() ([]*models.Bill, error) {
 // GetByUserID retrieves bills for a specific user
 func (r *billRepository) GetByUserID(userID string) ([]*models.Bill, error) {
 	var bills []*models.Bill
-	if err := r.db.Where("user_id = ?", userID).Order("due_day ASC").Find(&bills).Error; err != nil {
+	if err := r.db.Where("user_id = ?", userID).Order("name ASC").Find(&bills).Error; err != nil {
 		return nil, err
 	}
 	return bills, nil

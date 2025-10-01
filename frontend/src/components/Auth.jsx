@@ -1,33 +1,33 @@
-import { useState } from 'preact/hooks';
-import { login, register } from '../services/auth';
+import { useState } from "preact/hooks";
+import { login, register } from "../services/auth";
 
 export function Auth({ onLoginSuccess }) {
   const [isLogin, setIsLogin] = useState(true);
-  const [username, setUsername] = useState('');
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [error, setError] = useState('');
+  const [username, setUsername] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setError('');
+    setError("");
     setLoading(true);
 
     try {
       if (isLogin) {
         const response = await login(username, password);
-        localStorage.setItem('token', response.token);
-        localStorage.setItem('user', JSON.stringify(response.user));
+        localStorage.setItem("token", response.token);
+        localStorage.setItem("user", JSON.stringify(response.user));
         onLoginSuccess(response.user);
       } else {
         const response = await register(username, email, password);
-        localStorage.setItem('token', response.token);
-        localStorage.setItem('user', JSON.stringify(response.user));
+        localStorage.setItem("token", response.token);
+        localStorage.setItem("user", JSON.stringify(response.user));
         onLoginSuccess(response.user);
       }
     } catch (err) {
-      setError(err.message || 'Authentication failed');
+      setError(err.message || "Authentication failed");
     } finally {
       setLoading(false);
     }
@@ -41,19 +41,19 @@ export function Auth({ onLoginSuccess }) {
 
         <div class="auth-tabs">
           <button
-            class={`auth-tab ${isLogin ? 'active' : ''}`}
+            class={`auth-tab ${isLogin ? "active" : ""}`}
             onClick={() => {
               setIsLogin(true);
-              setError('');
+              setError("");
             }}
           >
             Login
           </button>
           <button
-            class={`auth-tab ${!isLogin ? 'active' : ''}`}
+            class={`auth-tab ${!isLogin ? "active" : ""}`}
             onClick={() => {
               setIsLogin(false);
-              setError('');
+              setError("");
             }}
           >
             Register
@@ -99,12 +99,12 @@ export function Auth({ onLoginSuccess }) {
               onChange={(e) => setPassword(e.target.value)}
               required
               minLength={8}
-              autoComplete={isLogin ? 'current-password' : 'new-password'}
+              autoComplete={isLogin ? "current-password" : "new-password"}
             />
           </div>
 
           <button type="submit" class="btn btn-primary" disabled={loading}>
-            {loading ? 'Please wait...' : (isLogin ? 'Login' : 'Register')}
+            {loading ? "Please wait..." : isLogin ? "Login" : "Register"}
           </button>
         </form>
       </div>
