@@ -11,8 +11,10 @@ import {
   deletePayment,
 } from "../services/api";
 import { getBillStatus, getDaySuffix } from "../utils/helpers";
+import { useToast } from "../components/Toast";
 
 export function Bills() {
+  const { showError, showSuccess, showInfo } = useToast();
   const [bills, setBills] = useState([]);
   const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -96,9 +98,11 @@ export function Bills() {
         // Update existing bill - preserve user_id
         billData.user_id = editingBill.user_id;
         await updateBill(editingBill.id, billData);
+        showSuccess("Bill updated successfully!");
       } else {
         // Create new bill
         await createBill(billData);
+        showSuccess("Bill created successfully!");
       }
 
       // Reset form and close modal
@@ -172,9 +176,10 @@ export function Bills() {
       };
       await createPayment(bill.id, paymentData);
       await loadBills();
+      showSuccess("Payment recorded successfully!");
     } catch (error) {
       console.error("Failed to record payment:", error);
-      alert("Failed to record payment");
+      showError("Failed to record payment. Please try again.");
     }
   };
 
@@ -194,9 +199,10 @@ export function Bills() {
       setShowPaymentActions(false);
       setSelectedBillForPayment(null);
       await loadBills();
+      showSuccess("Next payment recorded successfully!");
     } catch (error) {
       console.error("Failed to record payment:", error);
-      alert("Failed to record payment");
+      showError("Failed to record payment. Please try again.");
     } finally {
       setSubmitting(false);
     }
@@ -212,7 +218,7 @@ export function Bills() {
       const payments = paymentsData.payments || [];
 
       if (payments.length === 0) {
-        alert("No payments found to delete");
+        showInfo("No payments found to delete");
         return;
       }
 
@@ -224,9 +230,10 @@ export function Bills() {
       setShowPaymentActions(false);
       setSelectedBillForPayment(null);
       await loadBills();
+      showSuccess("Last payment deleted successfully!");
     } catch (error) {
       console.error("Failed to delete payment:", error);
-      alert("Failed to delete payment");
+      showError("Failed to delete payment. Please try again.");
     } finally {
       setDeleting(false);
     }
@@ -251,9 +258,10 @@ export function Bills() {
       setShowDeleteConfirm(false);
       setBillToDelete(null);
       await loadBills();
+      showSuccess("Bill deleted successfully!");
     } catch (error) {
       console.error("Failed to delete bill:", error);
-      alert("Failed to delete bill");
+      showError("Failed to delete bill. Please try again.");
     } finally {
       setDeleting(false);
     }

@@ -1,7 +1,9 @@
 import { useState, useEffect } from "preact/hooks";
 import { getCategories, createCategory, deleteCategory } from "../services/api";
+import { useToast } from "../components/Toast";
 
 export function Categories() {
+  const { showError, showSuccess } = useToast();
   const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
@@ -102,6 +104,7 @@ export function Categories() {
 
       // Reload categories
       await loadCategories();
+      showSuccess("Category created successfully!");
     } catch (error) {
       setError(error.message || "Failed to create category");
     } finally {
@@ -132,9 +135,10 @@ export function Categories() {
       setShowDeleteConfirm(false);
       setCategoryToDelete(null);
       await loadCategories();
+      showSuccess("Category deleted successfully!");
     } catch (error) {
       console.error("Failed to delete category:", error);
-      alert("Failed to delete category. It may be in use by existing bills.");
+      showError("Failed to delete category. It may be in use by existing bills.");
     } finally {
       setDeleting(false);
     }

@@ -7,8 +7,10 @@ import {
   deletePayment,
 } from "../services/api";
 import { getBillStatus, getDaySuffix } from "../utils/helpers";
+import { useToast } from "../components/Toast";
 
 export function BillDetails({ id }) {
+  const { showError, showSuccess } = useToast();
   const [bill, setBill] = useState(null);
   const [payments, setPayments] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -99,6 +101,7 @@ export function BillDetails({ id }) {
 
       // Reload data
       await loadBillDetails();
+      showSuccess("Payment recorded successfully!");
     } catch (error) {
       setError(error.message || "Failed to create payment");
     } finally {
@@ -130,9 +133,10 @@ export function BillDetails({ id }) {
       setShowDeleteConfirm(false);
       setPaymentToDelete(null);
       await loadBillDetails();
+      showSuccess("Payment deleted successfully!");
     } catch (error) {
       console.error("Failed to delete payment:", error);
-      alert("Failed to delete payment");
+      showError("Failed to delete payment. Please try again.");
     } finally {
       setDeleting(false);
     }

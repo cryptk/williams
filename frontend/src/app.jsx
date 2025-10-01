@@ -8,6 +8,7 @@ import { BillDetails } from "./pages/BillDetails";
 import { Categories } from "./pages/Categories";
 import { NotFound } from "./pages/NotFound";
 import { initCardShadows } from "./utils/cardEffects";
+import { ToastProvider } from "./components/Toast";
 
 export function App() {
   const [user, setUser] = useState(null);
@@ -57,17 +58,19 @@ export function App() {
   }
 
   return (
-    <div class="app">
-      <Header user={user} onLogout={handleLogout} />
-      <main class="main-content">
-        <Router>
-          <Dashboard path="/" />
-          <Bills path="/bills" />
-          <BillDetails path="/bills/:id" />
-          <Categories path="/categories" />
-          <NotFound default />
-        </Router>
-      </main>
-    </div>
+    <ToastProvider>
+      <div class="app">
+        <Header user={user} onLogout={handleLogout} />
+        <main class="main-content">
+          <Router>
+            <Dashboard path="/" />
+            <Bills path="/bills" />
+            <BillDetails path="/bills/:id" />
+            <Categories path="/categories" />
+            <NotFound default />
+          </Router>
+        </main>
+      </div>
+    </ToastProvider>
   );
 }
