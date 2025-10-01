@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'preact/hooks';
+import { route } from 'preact-router';
 import { getBills, createBill, updateBill, deleteBill, getCategories, createPayment, getPayments, deletePayment } from '../services/api';
 
 export function Bills() {
@@ -298,6 +299,13 @@ export function Bills() {
               <div class="bill-header">
                 <h3>{bill.name}</h3>
                 <div class="bill-actions">
+                  <button 
+                    class="action-btn view-btn" 
+                    onClick={() => route(`/bills/${bill.id}`)}
+                    title="View details"
+                  >
+                    👁️
+                  </button>
                   <button 
                     class="action-btn edit-btn" 
                     onClick={() => handleEditClick(bill)}

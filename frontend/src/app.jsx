@@ -4,6 +4,7 @@ import { Header } from './components/Header';
 import { Auth } from './components/Auth';
 import { Dashboard } from './pages/Dashboard';
 import { Bills } from './pages/Bills';
+import { BillDetails } from './pages/BillDetails';
 import { Categories } from './pages/Categories';
 import { NotFound } from './pages/NotFound';
 import { initCardShadows } from './utils/cardEffects';
@@ -62,6 +63,7 @@ export function App() {
         <Router>
           <Dashboard path="/" />
           <Bills path="/bills" />
+          <BillDetails path="/bills/:id" />
           <Categories path="/categories" />
           <NotFound default />
         </Router>
