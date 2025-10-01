@@ -138,7 +138,9 @@ export function Categories() {
       showSuccess("Category deleted successfully!");
     } catch (error) {
       console.error("Failed to delete category:", error);
-      showError("Failed to delete category. It may be in use by existing bills.");
+      showError(
+        "Failed to delete category. It may be in use by existing bills."
+      );
     } finally {
       setDeleting(false);
     }
