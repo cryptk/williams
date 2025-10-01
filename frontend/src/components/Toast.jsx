@@ -15,21 +15,24 @@ export const TOAST_TYPES = {
 export function ToastProvider({ children }) {
   const [toasts, setToasts] = useState([]);
 
-  const addToast = useCallback((message, type = TOAST_TYPES.INFO, duration = 5000) => {
-    const id = Date.now() + Math.random(); // Unique ID for each toast
-    const toast = { id, message, type, duration };
+  const addToast = useCallback(
+    (message, type = TOAST_TYPES.INFO, duration = 5000) => {
+      const id = Date.now() + Math.random(); // Unique ID for each toast
+      const toast = { id, message, type, duration };
 
-    setToasts((prev) => [...prev, toast]);
+      setToasts((prev) => [...prev, toast]);
 
-    // Auto-remove toast after duration
-    if (duration > 0) {
-      setTimeout(() => {
-        removeToast(id);
-      }, duration);
-    }
+      // Auto-remove toast after duration
+      if (duration > 0) {
+        setTimeout(() => {
+          removeToast(id);
+        }, duration);
+      }
 
-    return id;
-  }, []);
+      return id;
+    },
+    []
+  );
 
   const removeToast = useCallback((id) => {
     setToasts((prev) => prev.filter((toast) => toast.id !== id));
