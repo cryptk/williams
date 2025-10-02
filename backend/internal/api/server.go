@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"net/http"
+	"path/filepath"
 	"time"
 
 	"github.com/cryptk/williams/internal/api/middleware"
@@ -108,7 +109,7 @@ func NewServer(cfg *config.Config, db *database.DB) *Server {
 func (s *Server) setupRoutes() {
 
 	assetsPath := s.config.Server.StaticAssetsPath
-	s.router.Static("/assets", assetsPath+"/assets")
+	s.router.Static("/assets", filepath.Join(assetsPath, "assets"))
 
 	// Health check
 	s.router.GET("/health", s.healthCheck)
@@ -160,7 +161,7 @@ func (s *Server) setupRoutes() {
 	}
 
 	s.router.NoRoute(func(c *gin.Context) {
-		c.File(assetsPath + "/index.html")
+		c.File(filepath.Join(assetsPath, "index.html"))
 	})
 }
 
