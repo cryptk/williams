@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"net/http"
-	"os"
 	"path/filepath"
 	"strings"
 	"time"
@@ -110,50 +109,9 @@ func NewServer(cfg *config.Config, db *database.DB) *Server {
 // setupRoutes configures all API routes
 func (s *Server) setupRoutes() {
 
-	// Serve static frontend assets securely
-	s.router.NoRoute(func(c *gin.Context) {
-		if c.Request.Method != http.MethodGet && c.Request.Method != http.MethodHead {
-			c.Next()
-			return
-		}
-
-		staticDir := "build/dist"
-		requestPath := c.Request.URL.Path
-
-		// If requesting "/", serve index.html
-		if requestPath == "/" {
-			c.File(filepath.Join(staticDir, "index.html"))
-			return
-		}
-
-		// Clean the path to prevent path traversal
-		cleanPath := filepath.Clean(filepath.Join("/", requestPath)) // ensure leading slash
-		// Remove leading slash for http.Dir
-		relativePath := cleanPath[1:]
-
-		// Ensure the resolved path stays within staticDir using filepath.Rel
-		fullPath := filepath.Join(staticDir, relativePath)
-		absStaticDir, err1 := filepath.Abs(staticDir)
-		absFullPath, err2 := filepath.Abs(fullPath)
-		if err1 != nil || err2 != nil {
-			c.AbortWithStatus(http.StatusForbidden)
-			return
-		}
-		rel, err := filepath.Rel(absStaticDir, absFullPath)
-		if err != nil || strings.HasPrefix(rel, "..") || filepath.IsAbs(rel) {
-			c.AbortWithStatus(http.StatusForbidden)
-			return
-		}
-
-		// Check if the file exists using os.Stat (more efficient than opening twice)
-		fileToServe := filepath.Join(staticDir, relativePath)
-		if info, err := os.Stat(fileToServe); err == nil && !info.IsDir() {
-			c.File(fileToServe)
-			return
-		}
-		// Fallback: if not found, serve index.html for SPA routes (except for actual missing files)
-		c.File(filepath.Join(staticDir, "index.html"))
-	})
+	assetsPath := filepath.Clean(s.config.Server.StaticAssetsPath)
+	log.Info().Str("assets_path", assetsPath).Msg("Serving static assets from")
+	s.router.Static("/assets", filepath.Join(assetsPath, "assets"))
 
 	// Health check
 	s.router.GET("/health", s.healthCheck)
@@ -203,6 +161,22 @@ func (s *Server) setupRoutes() {
 			}
 		}
 	}
+
+	s.router.NoRoute(func(c *gin.Context) {
+		log.Info().Msg("No route matched")
+		if c.Request.Method != http.MethodGet && c.Request.Method != http.MethodHead {
+			// Only GET and HEAD requests are allowed for SPA routing
+			c.JSON(http.StatusNotFound, gin.H{"error": "Not found"})
+			return
+		}
+		if strings.HasPrefix(c.Request.URL.Path, "/api") {
+			// Undefined API routes should always return 404
+			c.JSON(http.StatusNotFound, gin.H{"error": "Not found"})
+			return
+		}
+		// Serve the main index.html for SPA routing
+		c.File(filepath.Join(assetsPath, "index.html"))
+	})
 }
 
 // Start starts the HTTP server

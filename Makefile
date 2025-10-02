@@ -5,7 +5,16 @@
 
 all: build/frontend build/backend
 run: build/frontend build/backend
-	./build/williams
+	if [ -e ./build/config.yaml ]; then \
+		echo "Using existing config.yaml"; \
+	elif [ -e ./backend/configs/config.yaml ]; then \
+		echo "Copying personalized config.yaml from backend/configs"; \
+		cp ./backend/configs/config.yaml ./build/config.yaml; \
+	else \
+		echo "No personalized config.yaml found, copying default config"; \
+		cp ./backend/configs/config.example.yaml ./build/config.yaml; \
+	fi
+	cd ./build && ./williams
 
 build: build/frontend build/backend
 

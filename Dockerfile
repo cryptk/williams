@@ -16,18 +16,20 @@ RUN go build -o /williams ./cmd/server
 
 # --- Frontend build stage ---
 FROM node:24-alpine3.22 AS frontend-builder
-WORKDIR /app
-COPY frontend/ ./frontend/
-WORKDIR /app/frontend
+COPY frontend/ /frontend
+WORKDIR /frontend
 RUN npm install && npm run build
 
 # --- Final minimal image ---
 FROM alpine:3.22
+# Set environment variable for static assets path
+ENV WILLIAMS_SERVER_STATIC_ASSETS_PATH="./dist"
 # Install runtime dependencies for sqlite3
 RUN apk add --no-cache sqlite-libs
+WORKDIR /build
 # Copy backend binary
 COPY --from=backend-builder /williams /williams
 # Copy frontend build assets
-COPY --from=frontend-builder /app/frontend/dist /build/dist
+COPY --from=frontend-builder /frontend/dist ./dist
 EXPOSE 8080
 ENTRYPOINT ["/williams"]

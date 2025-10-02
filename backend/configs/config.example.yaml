@@ -1,6 +1,7 @@
 server:
   host: localhost
   port: 8080
+  static_assets_path: ./dist  # Path to static frontend assets (default: ./dist)
 
 database:
   driver: sqlite  # sqlite, mysql, or postgres
