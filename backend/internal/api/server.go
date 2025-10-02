@@ -140,7 +140,7 @@ func (s *Server) setupRoutes() {
 			return
 		}
 		rel, err := filepath.Rel(absStaticDir, absFullPath)
-		if err != nil || strings.HasPrefix(rel, "..") || filepath.IsAbs(rel) {
+		if err != nil || rel == ".." || strings.HasPrefix(rel, ".."+string(os.PathSeparator)) || filepath.IsAbs(rel) {
 			c.AbortWithStatus(http.StatusForbidden)
 			return
 		}
