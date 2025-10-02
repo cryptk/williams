@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net/http"
 	"path/filepath"
+	"strings"
 	"time"
 
 	"github.com/cryptk/williams/internal/api/middleware"
@@ -162,6 +163,18 @@ func (s *Server) setupRoutes() {
 	}
 
 	s.router.NoRoute(func(c *gin.Context) {
+		log.Info().Msg("No route matched")
+		if c.Request.Method != http.MethodGet && c.Request.Method != http.MethodHead {
+			// Only GET and HEAD requests are allowed for SPA routing
+			c.JSON(http.StatusNotFound, gin.H{"error": "Not found"})
+			return
+		}
+		if strings.HasPrefix(c.Request.URL.Path, "/api") {
+			// Undefined API routes should always return 404
+			c.JSON(http.StatusNotFound, gin.H{"error": "Not found"})
+			return
+		}
+		// Serve the main index.html for SPA routing
 		c.File(filepath.Join(assetsPath, "index.html"))
 	})
 }

@@ -1,5 +1,4 @@
-# Williams - Bill Management System
-
+# Williams - Get to know your Bills
 A modern bill management application to help you track and manage your bills. Get to know your bills with William!
 
 ## Features
