@@ -19,8 +19,9 @@ type Config struct {
 
 // ServerConfig represents server configuration
 type ServerConfig struct {
-	Host string `mapstructure:"host"`
-	Port int    `mapstructure:"port"`
+	Host             string `mapstructure:"host"`
+	Port             int    `mapstructure:"port"`
+	StaticAssetsPath string `mapstructure:"static_assets_path"`
 }
 
 // DatabaseConfig represents database configuration
@@ -52,6 +53,7 @@ func Load() (*Config, error) {
 	// Set default values
 	v.SetDefault("server.host", "localhost")
 	v.SetDefault("server.port", 8080)
+	v.SetDefault("server.static_assets_path", "./dist")
 	v.SetDefault("database.driver", "sqlite")
 	v.SetDefault("database.dsn", "./williams.db")
 	v.SetDefault("auth.jwt_secret", "change-this-secret-in-production")

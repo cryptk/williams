@@ -107,7 +107,8 @@ func NewServer(cfg *config.Config, db *database.DB) *Server {
 // setupRoutes configures all API routes
 func (s *Server) setupRoutes() {
 
-	s.router.Static("/assets", "./build/dist/assets")
+	assetsPath := s.config.Server.StaticAssetsPath
+	s.router.Static("/assets", assetsPath+"/assets")
 
 	// Health check
 	s.router.GET("/health", s.healthCheck)
@@ -159,7 +160,7 @@ func (s *Server) setupRoutes() {
 	}
 
 	s.router.NoRoute(func(c *gin.Context) {
-		c.File("./build/dist/index.html")
+		c.File(assetsPath + "/index.html")
 	})
 }
 
