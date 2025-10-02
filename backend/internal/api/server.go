@@ -108,7 +108,8 @@ func NewServer(cfg *config.Config, db *database.DB) *Server {
 // setupRoutes configures all API routes
 func (s *Server) setupRoutes() {
 
-	assetsPath := s.config.Server.StaticAssetsPath
+	assetsPath := filepath.Clean(s.config.Server.StaticAssetsPath)
+	log.Info().Str("assets_path", assetsPath).Msg("Serving static assets from")
 	s.router.Static("/assets", filepath.Join(assetsPath, "assets"))
 
 	// Health check
