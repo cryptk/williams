@@ -39,7 +39,7 @@ jobs:
         with:
           flavor: |
             latest=false
-            suffix=${{ matrix.suffix }}
+            suffix=-${{ matrix.suffix }}
           images: ghcr.io/${{ github.repository }}
           tags: |
             type=ref,event=tag
@@ -67,12 +67,7 @@ jobs:
       - name: Save final image tag
         if: ${{ matrix.platform == 'linux/amd64' }}
         run: |
-          echo "Extracting final tag from: ${{ steps.meta.outputs.tags }}"
-          # The metadata action outputs a comma-separated list of tags. We use 'cut' to get the first one.
-          TAG_LIST="${{ steps.meta.outputs.tags }}"
-          FINAL_TAG=$(echo "$TAG_LIST" | cut -d ',' -f 1)
-          echo "Final tag determined: $FINAL_TAG"
-          echo "$FINAL_TAG" > ${{ runner.temp }}/final_tag
+          echo "${{ steps.meta.outputs.version }}" > ${{ runner.temp }}/final_tag
 
       - name: Upload final tag artifact
         if: ${{ matrix.platform == 'linux/amd64' }}
