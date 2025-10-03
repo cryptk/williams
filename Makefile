@@ -22,14 +22,15 @@ run: build/frontend build/backend
 
 build: build/frontend build/backend
 
-build/frontend:
-	rm -rf build/dist
+build/frontend: clean/frontend
+	@echo "Building frontend with VERSION=${VERSION}"
 	cd frontend && npm install
 	cd frontend && VERSION=${VERSION} npm run build -- --emptyOutDir --outDir ../build/dist
+	@echo "Frontend built successfully."
 
-build/backend:
-	mkdir -p build
+build/backend: clean/backend
 	@echo "Building backend with VERSION=${VERSION}"
+	mkdir -p build
 	cd backend && go mod download
 	cd backend && go build ${LDFLAGS} -o ../build/williams ./cmd/server
 	@echo "Backend built successfully."
