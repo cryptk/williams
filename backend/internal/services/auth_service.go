@@ -58,7 +58,7 @@ func (s *AuthService) Register(req *models.RegisterRequest) (*models.User, error
 	}
 
 	// Create default categories for the new user
-	if err := s.categoryRepo.CreateDefaultCategories(user.ID); err != nil {
+	if err := s.categoryRepo.CreateDefaults(user.ID); err != nil {
 		// Log the error but don't fail registration
 		// The user can create categories manually if this fails
 		log.Warn().Err(err).Str("user_id", user.ID).Msg("Failed to create default categories for user")

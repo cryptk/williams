@@ -26,6 +26,7 @@ type Bill struct {
 type Payment struct {
 	ID          string    `json:"id" gorm:"primaryKey"`
 	BillID      string    `json:"bill_id" gorm:"not null;index"` // Set from URL param, not request body
+	UserID      string    `json:"user_id" gorm:"not null;index"` // Set automatically from authenticated user
 	Amount      float64   `json:"amount" gorm:"not null" binding:"required,gt=0"`
 	PaymentDate time.Time `json:"payment_date" gorm:"not null" binding:"required"`
 	Notes       string    `json:"notes"`

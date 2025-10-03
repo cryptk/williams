@@ -3,6 +3,7 @@ package services
 import (
 	"github.com/cryptk/williams/internal/models"
 	"github.com/cryptk/williams/internal/repository"
+	"gorm.io/gorm"
 )
 
 // CategoryService handles business logic for categories
@@ -15,22 +16,23 @@ func NewCategoryService(repo repository.CategoryRepository) *CategoryService {
 	return &CategoryService{repo: repo}
 }
 
-// CreateCategory creates a new category
-func (s *CategoryService) CreateCategory(category *models.Category) error {
-	return s.repo.Create(category)
+// Create creates a new category
+func (s *CategoryService) Create(scopedDB *gorm.DB, category *models.Category) error {
+	return s.repo.Create(scopedDB, category)
 }
 
-// ListCategoriesByUser retrieves all categories for a specific user
-func (s *CategoryService) ListCategoriesByUser(userID string) ([]*models.Category, error) {
-	return s.repo.ListByUser(userID)
+// List retrieves all categories
+func (s *CategoryService) List(scopedDB *gorm.DB) ([]*models.Category, error) {
+	return s.repo.List(scopedDB)
 }
 
-// DeleteCategoryByUser deletes a category and verifies ownership
-func (s *CategoryService) DeleteCategoryByUser(id string, userID string) error {
-	return s.repo.DeleteByUser(id, userID)
+// Delete deletes a category
+func (s *CategoryService) Delete(scopedDB *gorm.DB, id string) error {
+	return s.repo.Delete(scopedDB, id)
 }
 
-// CreateDefaultCategories creates default categories for a new user
-func (s *CategoryService) CreateDefaultCategories(userID string) error {
-	return s.repo.CreateDefaultCategories(userID)
+// CreateDefaults creates default categories for a new user
+func (s *CategoryService) CreateDefaults(userID string) error {
+	return s.repo.CreateDefaults(userID)
 }
+
