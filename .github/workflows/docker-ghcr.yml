@@ -41,6 +41,8 @@ jobs:
             latest=false
             suffix=-${{ matrix.suffix }}
           images: ghcr.io/${{ github.repository }}
+          tags: |
+            type=ref,event=tag
 
       - name: Build and push ${{ matrix.platform }} image
         uses: docker/build-push-action@v5
@@ -51,7 +53,6 @@ jobs:
           platforms: ${{ matrix.platform }}
           build-args: |
             VERSION=${{ steps.meta.outputs.version }}
-          tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
           outputs: type=image,name=ghcr.io/${{ github.repository }},push-by-digest=true,digest-file=${{ runner.temp }}/digest-${{ matrix.suffix }}
 
