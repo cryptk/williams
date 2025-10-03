@@ -205,12 +205,47 @@ export function BillDetails({ id }) {
           </div>
 
           <div class="info-item">
-            <label>Due Day</label>
+            <label>Recurrence Type</label>
             <div>
-              {bill.due_day}
-              {getDaySuffix(bill.due_day)} of each month
+              {bill.recurrence_type === "fixed_date" && "Monthly (Fixed Date)"}
+              {bill.recurrence_type === "interval" && "Every X Days (Interval)"}
+              {bill.recurrence_type === "none" && "One-time"}
             </div>
           </div>
+
+          <div class="info-item">
+            <label>
+              {bill.recurrence_type === "fixed_date"
+                ? "Due Day"
+                : bill.recurrence_type === "interval"
+                ? "Interval"
+                : "Day Value"}
+            </label>
+            <div>
+              {bill.recurrence_type === "fixed_date" &&
+                `${bill.recurrence_days}${getDaySuffix(
+                  bill.recurrence_days
+                )} of each month`}
+              {bill.recurrence_type === "interval" &&
+                `Every ${bill.recurrence_days} day${
+                  bill.recurrence_days !== 1 ? "s" : ""
+                }`}
+              {bill.recurrence_type === "none" && bill.recurrence_days}
+            </div>
+          </div>
+
+          {(bill.recurrence_type === "interval" ||
+            bill.recurrence_type === "none") &&
+            bill.start_date && (
+              <div class="info-item">
+                <label>
+                  {bill.recurrence_type === "interval"
+                    ? "Start Date"
+                    : "Due Date"}
+                </label>
+                <div>{formatDate(bill.start_date)}</div>
+              </div>
+            )}
 
           <div class="info-item">
             <label>Next Due Date</label>
@@ -239,11 +274,6 @@ export function BillDetails({ id }) {
           <div class="info-item">
             <label>Category</label>
             <div>{bill.category || "None"}</div>
-          </div>
-
-          <div class="info-item">
-            <label>Recurring</label>
-            <div>{bill.is_recurring ? "Yes" : "No"}</div>
           </div>
 
           {bill.notes && (

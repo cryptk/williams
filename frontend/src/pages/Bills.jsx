@@ -12,6 +12,8 @@ import {
 } from "../services/api";
 import { getBillStatus, getDaySuffix } from "../utils/helpers";
 import { toast } from "../components/Toast";
+import DatePicker from "react-datepicker";
+import "react-datepicker/dist/react-datepicker.css";
 
 export function Bills() {
   const [bills, setBills] = useState([]);
@@ -29,10 +31,11 @@ export function Bills() {
   const [formData, setFormData] = useState({
     name: "",
     amount: "",
-    due_day: "",
+    recurrence_days: "",
     category_id: "",
     is_paid: false,
-    is_recurring: true,
+    recurrence_type: "fixed_date",
+    start_date: null,
     notes: "",
   });
 
@@ -70,6 +73,13 @@ export function Bills() {
     }));
   };
 
+  const handleDateChange = (date) => {
+    setFormData((prev) => ({
+      ...prev,
+      start_date: date,
+    }));
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
@@ -77,7 +87,7 @@ export function Bills() {
 
     try {
       // Validate form
-      if (!formData.name || !formData.amount || !formData.due_day) {
+      if (!formData.name || !formData.amount || !formData.recurrence_days) {
         setError("Please fill in all required fields");
         setSubmitting(false);
         return;
@@ -87,9 +97,12 @@ export function Bills() {
       const billData = {
         name: formData.name,
         amount: parseFloat(formData.amount),
-        due_day: parseInt(formData.due_day),
+        recurrence_days: parseInt(formData.recurrence_days),
         category_id: formData.category_id || null,
-        is_recurring: formData.is_recurring,
+        recurrence_type: formData.recurrence_type,
+        start_date: formData.start_date
+          ? formData.start_date.toISOString()
+          : null,
         notes: formData.notes,
       };
 
@@ -108,10 +121,11 @@ export function Bills() {
       setFormData({
         name: "",
         amount: "",
-        due_day: "",
+        recurrence_days: "",
         category_id: "",
         is_paid: false,
-        is_recurring: true,
+        recurrence_type: "fixed_date",
+        start_date: null,
         notes: "",
       });
       setEditingBill(null);
@@ -138,10 +152,11 @@ export function Bills() {
     setFormData({
       name: "",
       amount: "",
-      due_day: "",
-      category: "",
+      recurrence_days: "",
+      category_id: "",
       is_paid: false,
-      is_recurring: true,
+      recurrence_type: "fixed_date",
+      start_date: null,
       notes: "",
     });
   };
@@ -151,10 +166,11 @@ export function Bills() {
     setFormData({
       name: bill.name,
       amount: bill.amount.toString(),
-      due_day: bill.due_day.toString(),
+      recurrence_days: bill.recurrence_days.toString(),
       category_id: bill.category_id || "",
       is_paid: bill.is_paid,
-      is_recurring: bill.is_recurring,
+      recurrence_type: bill.recurrence_type || "none",
+      start_date: bill.start_date ? new Date(bill.start_date) : null,
       notes: bill.notes || "",
     });
     setShowModal(true);
@@ -322,10 +338,21 @@ export function Bills() {
                 </div>
               </div>
               <p class="amount">${bill.amount.toFixed(2)}</p>
-              <p class="due-date">
-                Due Day: {bill.due_day}
-                {getDaySuffix(bill.due_day)} of each month
-              </p>
+              {bill.recurrence_type === "fixed_date" && (
+                <p class="due-date">
+                  Due Day: {bill.recurrence_days}
+                  {getDaySuffix(bill.recurrence_days)} of each month
+                </p>
+              )}
+              {bill.recurrence_type === "interval" && (
+                <p class="due-date">
+                  Due every: {bill.recurrence_days} day
+                  {bill.recurrence_days !== 1 ? "s" : ""}
+                </p>
+              )}
+              {bill.recurrence_type === "none" && (
+                <p class="due-date">One-time bill</p>
+              )}
               {bill.next_due_date && (
                 <p class="due-date">
                   Next Due: {new Date(bill.next_due_date).toLocaleDateString()}
@@ -348,7 +375,12 @@ export function Bills() {
                 <span class={`status ${bill.is_paid ? "paid" : "unpaid"}`}>
                   {bill.is_paid ? "Paid" : "Unpaid"}
                 </span>
-                {bill.is_recurring && <span class="badge">Recurring</span>}
+                {bill.recurrence_type === "fixed_date" && (
+                  <span class="badge">Monthly</span>
+                )}
+                {bill.recurrence_type === "interval" && (
+                  <span class="badge">Interval</span>
+                )}
                 <button
                   class={`btn-mark-paid ${bill.is_paid ? "paid" : ""}`}
                   onClick={() => handleMarkAsPaid(bill)}
@@ -402,21 +434,100 @@ export function Bills() {
               </div>
 
               <div class="form-group">
-                <label for="due_day">Due Day of Month *</label>
-                <input
-                  type="number"
-                  id="due_day"
-                  name="due_day"
-                  value={formData.due_day}
-                  onChange={handleInputChange}
-                  required
-                  min="1"
-                  max="31"
-                  placeholder="e.g., 15 (for 15th of each month)"
-                />
-                <small class="form-help">
-                  Enter the day of the month (1-31) when this bill is due
-                </small>
+                <label for="recurrence_type">Recurrence *</label>
+                <div class="recurrence-sentence" role="group" aria-labelledby="recurrence-label">
+                  <span id="recurrence-label" class="sentence-text">Due</span>
+                  <select
+                    id="recurrence_type"
+                    name="recurrence_type"
+                    value={formData.recurrence_type}
+                    onChange={handleInputChange}
+                    class="inline-select"
+                    aria-label="Recurrence type"
+                    required
+                  >
+                    <option value="none">once</option>
+                    <option value="fixed_date">monthly</option>
+                    <option value="interval">every</option>
+                  </select>
+
+                  {formData.recurrence_type === "fixed_date" && (
+                    <>
+                      <span class="sentence-text">on the</span>
+                      <input
+                        type="number"
+                        id="recurrence_days_fixed"
+                        name="recurrence_days"
+                        value={formData.recurrence_days}
+                        onChange={handleInputChange}
+                        class="inline-number-input"
+                        aria-label="Day of month (1-31)"
+                        aria-describedby="day-suffix-fixed"
+                        required
+                        min="1"
+                        max="31"
+                        placeholder="15"
+                      />
+                      <span id="day-suffix-fixed" class="sentence-text">
+                        {formData.recurrence_days
+                          ? getDaySuffix(parseInt(formData.recurrence_days))
+                          : "th"}{" "}
+                        of the month
+                      </span>
+                    </>
+                  )}
+
+                  {formData.recurrence_type === "interval" && (
+                    <>
+                      <input
+                        type="number"
+                        id="recurrence_days_interval"
+                        name="recurrence_days"
+                        value={formData.recurrence_days}
+                        onChange={handleInputChange}
+                        class="inline-number-input"
+                        aria-label="Recurrence interval in days (1-365)"
+                        aria-describedby="interval-suffix"
+                        required
+                        min="1"
+                        max="365"
+                        placeholder="14"
+                      />
+                      <span id="interval-suffix" class="sentence-text">
+                        day{formData.recurrence_days !== "1" ? "s" : ""}{" "}
+                        starting on
+                      </span>
+                      <DatePicker
+                        selected={formData.start_date}
+                        onChange={handleDateChange}
+                        dateFormat="MM/dd/yyyy"
+                        placeholderText="Select date"
+                        className="inline-date-picker"
+                        ariaLabelledBy="interval-start-label"
+                        id="start_date_interval"
+                        required
+                      />
+                      <span id="interval-start-label" class="visually-hidden">Start date for interval recurrence</span>
+                    </>
+                  )}
+
+                  {formData.recurrence_type === "none" && (
+                    <>
+                      <span class="sentence-text">on</span>
+                      <DatePicker
+                        selected={formData.start_date}
+                        onChange={handleDateChange}
+                        dateFormat="MM/dd/yyyy"
+                        placeholderText="Select date"
+                        className="inline-date-picker"
+                        ariaLabelledBy="due-date-label"
+                        id="start_date_once"
+                        required
+                      />
+                      <span id="due-date-label" class="visually-hidden">Due date for one-time bill</span>
+                    </>
+                  )}
+                </div>
               </div>
 
               <div class="form-group">
@@ -446,18 +557,6 @@ export function Bills() {
                   rows="3"
                   placeholder="Add any notes about this bill..."
                 />
-              </div>
-
-              <div class="form-group checkbox-group">
-                <label>
-                  <input
-                    type="checkbox"
-                    name="is_recurring"
-                    checked={formData.is_recurring}
-                    onChange={handleInputChange}
-                  />
-                  <span>Recurring bill</span>
-                </label>
               </div>
 
               {error && <div class="error-message">{error}</div>}

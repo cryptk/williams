@@ -4,9 +4,10 @@ CREATE TABLE IF NOT EXISTS bills (
     user_id TEXT NOT NULL,
     name TEXT NOT NULL,
     amount REAL NOT NULL,
-    due_day INTEGER NOT NULL CHECK(due_day >= 1 AND due_day <= 31),
+    recurrence_days INTEGER NOT NULL CHECK(recurrence_days >= 1),
     category_id TEXT NULL,
-    is_recurring INTEGER DEFAULT 0,
+    recurrence_type TEXT DEFAULT 'none' CHECK(recurrence_type IN ('none', 'fixed_date', 'interval')),
+    start_date DATETIME NULL,
     notes TEXT,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
@@ -16,6 +17,6 @@ CREATE TABLE IF NOT EXISTS bills (
 
 -- Create indexes for faster queries
 CREATE INDEX IF NOT EXISTS idx_bills_user_id ON bills(user_id);
-CREATE INDEX IF NOT EXISTS idx_bills_due_day ON bills(due_day);
+CREATE INDEX IF NOT EXISTS idx_bills_recurrence_days ON bills(recurrence_days);
 CREATE INDEX IF NOT EXISTS idx_bills_category_id ON bills(category_id);
-CREATE INDEX IF NOT EXISTS idx_bills_is_recurring ON bills(is_recurring);
+CREATE INDEX IF NOT EXISTS idx_bills_recurrence_type ON bills(recurrence_type);
