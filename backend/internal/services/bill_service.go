@@ -143,10 +143,13 @@ func (s *BillService) calculateNextDueDate(bill *models.Bill) (*time.Time, *time
 		lastPaidPtr = &latestPayment.CreatedAt
 
 		// Calculate next due date based on recurrence type
-		if bill.RecurrenceType == "fixed_date" {
+		switch bill.RecurrenceType {
+		case "fixed_date":
 			nextDue = utils.CalculateNextDueDateAfterPayment(bill.RecurrenceDays, latestPayment.PaymentDate)
-		} else if bill.RecurrenceType == "interval" {
+		case "interval":
 			nextDue = utils.CalculateNextDueDateAfterPaymentInterval(bill.RecurrenceDays, latestPayment.PaymentDate)
+		default:
+			return nil, nil, fmt.Errorf("unknown recurrence_type: %s", bill.RecurrenceType)
 		}
 	} else {
 		// No payments - calculate from start_date or creation date
@@ -155,10 +158,13 @@ func (s *BillService) calculateNextDueDate(bill *models.Bill) (*time.Time, *time
 			referenceDate = *bill.StartDate
 		}
 
-		if bill.RecurrenceType == "fixed_date" {
+		switch bill.RecurrenceType {
+		case "fixed_date":
 			nextDue = utils.CalculateNextDueDate(bill.RecurrenceDays, referenceDate)
-		} else if bill.RecurrenceType == "interval" {
+		case "interval":
 			nextDue = utils.CalculateNextDueDateInterval(bill.RecurrenceDays, referenceDate)
+		default:
+			return nil, nil, fmt.Errorf("unknown recurrence_type: %s", bill.RecurrenceType)
 		}
 	}
 
@@ -232,12 +238,13 @@ func (s *BillService) validateBillRecurrence(bill *models.Bill) error {
 	}
 
 	// Validate recurrence_days based on recurrence_type
-	if bill.RecurrenceType == "fixed_date" {
+	switch bill.RecurrenceType {
+	case "fixed_date":
 		// For fixed_date, recurrence_days must be 1-31 (day of month)
 		if bill.RecurrenceDays < 1 || bill.RecurrenceDays > 31 {
 			return fmt.Errorf("recurrence_days must be between 1 and 31 for fixed_date bills")
 		}
-	} else if bill.RecurrenceType == "interval" {
+	case "interval":
 		// For interval, recurrence_days must be at least 1 and not exceed maximum
 		if bill.RecurrenceDays < 1 {
 			return fmt.Errorf("recurrence_days must be at least 1 for interval bills")
@@ -245,6 +252,10 @@ func (s *BillService) validateBillRecurrence(bill *models.Bill) error {
 		if bill.RecurrenceDays > s.config.Bills.MaximumBillingInterval {
 			return fmt.Errorf("recurrence_days cannot exceed %d days for interval bills", s.config.Bills.MaximumBillingInterval)
 		}
+	case "none":
+		// No recurrence_days validation needed for 'none'
+	default:
+		return fmt.Errorf("unknown recurrence_type: %s", bill.RecurrenceType)
 	}
 
 	return nil
