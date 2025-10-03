@@ -35,14 +35,22 @@ run/backend:
 	cd backend && go run ./cmd/server/main.go
 
 # Remove build artifacts
-clean:
+clean: clean/frontend clean/backend
+
+clean/deep: clean/frontend/deep clean/backend/deep
 	rm -rf build
 
 clean/frontend:
-	rm -rf build/dist
+	rm -rf build/dist frontend/dist
+
+clean/frontend/deep: clean/frontend
+	rm -rf frontend/node_modules
 
 clean/backend:
-	rm -rf build/williams
+	rm -f build/williams backend/williams backend/server
+
+clean/backend/deep: clean/backend
+	rm -f backend/williams.db
 
 # Lint frontend code
 lint/frontend:

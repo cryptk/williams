@@ -109,10 +109,6 @@ func NewServer(cfg *config.Config, db *database.DB) *Server {
 // setupRoutes configures all API routes
 func (s *Server) setupRoutes() {
 
-	assetsPath := filepath.Clean(s.config.Server.StaticAssetsPath)
-	log.Info().Str("assets_path", assetsPath).Msg("Serving static assets from")
-	s.router.Static("/assets", filepath.Join(assetsPath, "assets"))
-
 	// Health check
 	s.router.GET("/health", s.healthCheck)
 
@@ -161,6 +157,12 @@ func (s *Server) setupRoutes() {
 			}
 		}
 	}
+
+	assetsPath := filepath.Clean(s.config.Server.StaticAssetsPath)
+	log.Info().Str("assets_path", assetsPath).Msg("Serving static assets from")
+	s.router.Static("/assets", filepath.Join(assetsPath, "assets"))
+
+	s.router.StaticFile("/favicon.png", filepath.Join(assetsPath, "favicon.png"))
 
 	s.router.NoRoute(func(c *gin.Context) {
 		log.Info().Msg("No route matched")
