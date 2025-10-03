@@ -45,6 +45,7 @@ jobs:
             type=ref,event=tag
 
       - name: Build and push ${{ matrix.platform }} image
+        id: build
         uses: docker/build-push-action@v5
         with:
           context: .
@@ -53,35 +54,35 @@ jobs:
           platforms: ${{ matrix.platform }}
           build-args: |
             VERSION=${{ steps.meta.outputs.version }}
+          tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
-          outputs: type=image,name=ghcr.io/${{ github.repository }},push-by-digest=true,digest-file=${{ runner.temp }}/digest-${{ matrix.suffix }}
+          outputs: type=image,name=ghcr.io/${{ github.repository }}
 
-      - name: Save image digest as artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: digests
-          path: ${{ runner.temp }}/digest-${{ matrix.suffix }}
-          
-      # Save the main tag for the manifest job (only need one copy)
-      - name: Save final image tag
-        if: ${{ matrix.platform == 'linux/amd64' }}
+      - name: Save Digest and Tag
+        id: save_data
         run: |
-          echo "${{ steps.meta.outputs.version }}" > ${{ runner.temp }}/final_tag
+          # Use a generic name to save the digest (e.g., digest-linux-amd64)
+          echo "${{ steps.build.outputs.digest }}" > ${{ runner.temp }}/digest-${{ matrix.suffix }}
+          
+          # Only the amd64 job needs to save the clean version tag
+          if [ "${{ matrix.platform }}" == "linux/amd64" ]; then
+            echo "${{ steps.meta.outputs.version }}" > ${{ runner.temp }}/final_tag
+          fi
 
-      - name: Upload final tag artifact
-        if: ${{ matrix.platform == 'linux/amd64' }}
+      - name: Upload Build Artifacts
+        if: success() || always()
         uses: actions/upload-artifact@v4
         with:
-          name: final-tag
-          path: ${{ runner.temp }}/final_tag
+          name: build-data
+          path: |
+            ${{ runner.temp }}/digest-${{ matrix.suffix }}
+            ${{ runner.temp }}/final_tag
 
   merge-manifest:
     name: Create Multi-Arch Manifest
     needs: build-per-arch 
     runs-on: ubuntu-latest
     
-    # No need for an 'if' check, as the entire workflow is now tag-only
-
     steps:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
