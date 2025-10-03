@@ -1,9 +1,8 @@
 package api
 
 import (
-	"net/http"
-
 	"errors"
+	"net/http"
 
 	"github.com/cryptk/williams/internal/models"
 	"github.com/cryptk/williams/pkg/utils"

@@ -35,4 +35,3 @@ func (s *CategoryService) Delete(scopedDB *gorm.DB, id string) error {
 func (s *CategoryService) CreateDefaults(userID string) error {
 	return s.repo.CreateDefaults(userID)
 }
-
