@@ -10,8 +10,10 @@
     "lint": "eslint src --ext .js,.jsx"
   },
   "dependencies": {
+    "date-fns": "^4.1.0",
     "preact": "^10.27.2",
     "preact-router": "^4.1.2",
+    "react-datepicker": "^8.7.0",
     "react-toastify": "^11.0.5"
   },
   "devDependencies": {

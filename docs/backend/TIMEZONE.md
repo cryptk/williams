@@ -58,7 +58,11 @@ now := utils.NowInAppTimezone()
 
 **Date calculations:**
 ```go
-nextDue := utils.CalculateNextDueDate(bill.DueDay, time.Now())
+// For fixed-date recurring bills (monthly on specific day)
+nextDue := utils.CalculateNextDueDate(bill.RecurrenceDays, time.Now())
+
+// For interval-based recurring bills (every N days)
+nextDue := utils.CalculateNextDueDateInterval(bill.RecurrenceDays, time.Now())
 ```
 
 ## Troubleshooting

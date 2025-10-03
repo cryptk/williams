@@ -93,21 +93,19 @@ dueDate := date.DateForMonthDay(2024, 1, 15)
 
 #### Next Due Date for Recurring Bills
 
-```go
-func NextDueDateFromDay(dueDay int, location *time.Location) *time.Time {
-    today := time.Now().In(location)
-    
-    // Try this month
-    thisMonth := time.Date(today.Year(), today.Month(), dueDay, 0, 0, 0, 0, location)
-    if thisMonth.After(today) {
-        return &thisMonth
-    }
-    
-    // Must be next month
-    nextMonth := thisMonth.AddDate(0, 1, 0)
-    return &nextMonth
-}
-```
+**Current implementation** uses sophisticated date calculation logic to handle multiple 
+recurrence types (fixed_date, interval, none). The implementation is in `pkg/utils/date.go`:
+
+- `CalculateNextDueDate(dueDay int, referenceDate time.Time)` - For fixed-date recurring bills
+- `CalculateNextDueDateInterval(intervalDays int, referenceDate time.Time)` - For interval-based recurring bills
+- `CalculateNextDueDateAfterPayment(dueDay int, paymentDate time.Time)` - After payment for fixed-date
+- `CalculateNextDueDateAfterPaymentInterval(intervalDays int, paymentDate time.Time)` - After payment for interval
+
+**See `BILL_RECURRENCE.md`** for complete details on the recurrence system including:
+- How each recurrence type works
+- Edge case handling (months with fewer days)
+- Payment date calculations
+- Code examples and best practices
 
 **Why this logic:**
 - Bill due on 15th, today is 10th → due in 5 days (this month)
@@ -127,23 +125,23 @@ nextMonth := thisMonth.AddDate(0, 1, 0)
 ### Bill Service (`internal/services/bill_service.go`)
 
 ```go
-func (s *BillService) GetBillsWithStatus(userID string) ([]*models.Bill, error) {
-    bills, err := s.repo.GetBillsByUser(userID)
-    if err != nil {
-        return nil, err
-    }
-    
-    // Get today in application timezone
-    today := date.TodayInLocation()
-    
+func (s *BillService) enrichBillsWithPaymentStatus(bills []*models.Bill) ([]*models.Bill, error) {
     for _, bill := range bills {
-        // Calculate next due date
-        bill.NextDueDate = date.NextDueDateFromDay(bill.DueDay, utils.AppLocation)
-        
-        // Check if paid this cycle
-        bill.IsPaid = s.IsBillPaidForCycle(bill.ID, *bill.NextDueDate)
+        // Calculate next due date based on recurrence type
+        nextDue, lastPaid, err := s.calculateNextDueDate(bill)
+        if err != nil {
+            return nil, err
+        }
+        bill.NextDueDate = nextDue
+        bill.LastPaidDate = lastPaid
+
+        // Calculate is_paid status
+        isPaid, err := s.calculateIsPaid(bill)
+        if err != nil {
+            return nil, err
+        }
+        bill.IsPaid = isPaid
     }
-    
     return bills, nil
 }
 ```

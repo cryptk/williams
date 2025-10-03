@@ -271,16 +271,17 @@ type User struct {
 ### Bill
 ```go
 type Bill struct {
-    ID          string    `json:"id"`
-    UserID      string    `json:"user_id"`
-    Name        string    `json:"name"`
-    Amount      float64   `json:"amount"`
-    DueDay      int       `json:"due_day"` // Day of month (1-31)
-    Category    string    `json:"category"`
-    IsRecurring bool      `json:"is_recurring"`
-    Notes       string    `json:"notes"`
-    CreatedAt   time.Time `json:"created_at"`
-    UpdatedAt   time.Time `json:"updated_at"`
+    ID             string    `json:"id"`
+    UserID         string    `json:"user_id"`
+    Name           string    `json:"name"`
+    Amount         float64   `json:"amount"`
+    RecurrenceDays int       `json:"recurrence_days"` // Day of month (1-31) for fixed_date, or interval days for interval
+    Category       string    `json:"category"`
+    RecurrenceType string    `json:"recurrence_type"` // "none", "fixed_date", or "interval"
+    StartDate      *time.Time `json:"start_date,omitempty"` // Optional: For interval/none bills, specifies when bill starts/is due
+    Notes          string    `json:"notes"`
+    CreatedAt      time.Time `json:"created_at"`
+    UpdatedAt      time.Time `json:"updated_at"`
     
     // Computed fields (not stored in database)
     IsPaid       bool       `json:"is_paid"`

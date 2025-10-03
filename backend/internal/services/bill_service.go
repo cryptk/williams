@@ -1,6 +1,7 @@
 package services
 
 import (
+	"fmt"
 	"time"
 
 	"github.com/cryptk/williams/internal/config"
@@ -27,6 +28,10 @@ func NewBillService(repo repository.BillRepository, paymentRepo repository.Payme
 
 // CreateBill creates a new bill
 func (s *BillService) CreateBill(bill *models.Bill) error {
+	// Validate recurrence_days based on recurrence_type
+	if err := s.validateBillRecurrence(bill); err != nil {
+		return err
+	}
 	return s.repo.Create(bill)
 }
 
@@ -112,8 +117,17 @@ func (s *BillService) enrichBillsWithPaymentStatus(bills []*models.Bill) ([]*mod
 	return bills, nil
 }
 
-// calculateNextDueDate determines the next due date for a bill based on due_day and payment history
+// calculateNextDueDate determines the next due date for a bill based on recurrence_type and payment history
 func (s *BillService) calculateNextDueDate(bill *models.Bill) (*time.Time, *time.Time, error) {
+	// Non-recurring bills don't have a next due date
+	if bill.RecurrenceType == "none" {
+		// For one-time bills, use start_date as the due date if available
+		if bill.StartDate != nil {
+			return bill.StartDate, nil, nil
+		}
+		return nil, nil, nil
+	}
+
 	// Get the most recent payment
 	latestPayment, err := s.paymentRepo.GetLatestByBillID(bill.ID)
 	if err != nil {
@@ -127,19 +141,32 @@ func (s *BillService) calculateNextDueDate(bill *models.Bill) (*time.Time, *time
 		// Bill has payments - calculate from last payment date (the due date being paid)
 		// But show when they actually paid (CreatedAt) for last_paid_date
 		lastPaidPtr = &latestPayment.CreatedAt
-		nextDue = utils.CalculateNextDueDateAfterPayment(bill.DueDay, latestPayment.PaymentDate)
+
+		// Calculate next due date based on recurrence type
+		if bill.RecurrenceType == "fixed_date" {
+			nextDue = utils.CalculateNextDueDateAfterPayment(bill.RecurrenceDays, latestPayment.PaymentDate)
+		} else if bill.RecurrenceType == "interval" {
+			nextDue = utils.CalculateNextDueDateAfterPaymentInterval(bill.RecurrenceDays, latestPayment.PaymentDate)
+		}
 	} else {
-		// No payments - calculate from creation date
-		nextDue = utils.CalculateNextDueDate(bill.DueDay, bill.CreatedAt)
+		// No payments - calculate from start_date or creation date
+		referenceDate := bill.CreatedAt
+		if bill.StartDate != nil {
+			referenceDate = *bill.StartDate
+		}
+
+		if bill.RecurrenceType == "fixed_date" {
+			nextDue = utils.CalculateNextDueDate(bill.RecurrenceDays, referenceDate)
+		} else if bill.RecurrenceType == "interval" {
+			nextDue = utils.CalculateNextDueDateInterval(bill.RecurrenceDays, referenceDate)
+		}
 	}
 
 	return &nextDue, lastPaidPtr, nil
-}
-
-// calculateIsPaid determines if a bill is considered paid
+} // calculateIsPaid determines if a bill is considered paid
 func (s *BillService) calculateIsPaid(bill *models.Bill) (bool, error) {
-	if bill.IsRecurring {
-		// For recurring bills: check if next due date is at least grace_days in the future
+	if bill.RecurrenceType != "none" {
+		// For recurring bills (fixed_date or interval): check if next due date is at least grace_days in the future
 		if bill.NextDueDate == nil {
 			return false, nil
 		}
@@ -157,6 +184,10 @@ func (s *BillService) calculateIsPaid(bill *models.Bill) (bool, error) {
 
 // UpdateBillByUser updates an existing bill and verifies ownership
 func (s *BillService) UpdateBillByUser(bill *models.Bill, userID string) error {
+	// Validate recurrence_days based on recurrence_type
+	if err := s.validateBillRecurrence(bill); err != nil {
+		return err
+	}
 	return s.repo.UpdateByUser(bill, userID)
 }
 
@@ -189,4 +220,30 @@ func (s *BillService) GetStatsByUser(userID string) (*models.BillStats, error) {
 	}
 
 	return stats, nil
+}
+
+// validateBillRecurrence validates the recurrence settings of a bill
+func (s *BillService) validateBillRecurrence(bill *models.Bill) error {
+	// Validate recurrence_type
+	if bill.RecurrenceType != "none" && bill.RecurrenceType != "fixed_date" && bill.RecurrenceType != "interval" {
+		return fmt.Errorf("invalid recurrence_type: must be 'none', 'fixed_date', or 'interval'")
+	}
+
+	// Validate recurrence_days based on recurrence_type
+	if bill.RecurrenceType == "fixed_date" {
+		// For fixed_date, recurrence_days must be 1-31 (day of month)
+		if bill.RecurrenceDays < 1 || bill.RecurrenceDays > 31 {
+			return fmt.Errorf("recurrence_days must be between 1 and 31 for fixed_date bills")
+		}
+	} else if bill.RecurrenceType == "interval" {
+		// For interval, recurrence_days must be at least 1 and not exceed maximum
+		if bill.RecurrenceDays < 1 {
+			return fmt.Errorf("recurrence_days must be at least 1 for interval bills")
+		}
+		if bill.RecurrenceDays > s.config.Bills.MaximumBillingInterval {
+			return fmt.Errorf("recurrence_days cannot exceed %d days for interval bills", s.config.Bills.MaximumBillingInterval)
+		}
+	}
+
+	return nil
 }

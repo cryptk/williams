@@ -2,7 +2,7 @@ package utils
 
 import "time"
 
-// CalculateNextDueDate calculates the next due date for a bill based on:
+// CalculateNextDueDate calculates the next due date for a fixed-date recurring bill based on:
 // - dueDay: the day of the month (1-31) the bill is due
 // - referenceDate: the date to calculate from (created date or last payment date)
 // Returns the next occurrence of dueDay that is >= referenceDate
@@ -40,7 +40,7 @@ func CalculateNextDueDate(dueDay int, referenceDate time.Time) time.Time {
 	return nextDue
 }
 
-// CalculateNextDueDateAfterPayment calculates the next due date after a payment
+// CalculateNextDueDateAfterPayment calculates the next due date after a payment for fixed-date recurring bills
 // This moves to the next occurrence of dueDay after the payment date
 func CalculateNextDueDateAfterPayment(dueDay int, paymentDate time.Time) time.Time {
 	// Ensure we're working in the application's timezone
@@ -64,6 +64,36 @@ func CalculateNextDueDateAfterPayment(dueDay int, paymentDate time.Time) time.Ti
 		// Get the first day of the next month, then go back one day
 		nextDue = time.Date(nextMonth.Year(), nextMonth.Month()+1, 1, 0, 0, 0, 0, GetAppLocation()).AddDate(0, 0, -1)
 	}
+
+	return nextDue
+}
+
+// CalculateNextDueDateInterval calculates the next due date for an interval-based recurring bill based on:
+// - intervalDays: the number of days between each occurrence of the bill
+// - referenceDate: the date to calculate from (created date or last payment date)
+// Returns the next due date that is >= referenceDate
+func CalculateNextDueDateInterval(intervalDays int, referenceDate time.Time) time.Time {
+	// Ensure we're working in the application's timezone
+	referenceDate = ConvertToAppTimezone(referenceDate)
+
+	// For interval bills, simply add the interval to the reference date
+	// Normalize to midnight for consistency
+	nextDue := time.Date(referenceDate.Year(), referenceDate.Month(), referenceDate.Day(), 0, 0, 0, 0, GetAppLocation())
+	nextDue = nextDue.AddDate(0, 0, intervalDays)
+
+	return nextDue
+}
+
+// CalculateNextDueDateAfterPaymentInterval calculates the next due date after a payment for interval-based recurring bills
+// This adds the interval days to the payment date
+func CalculateNextDueDateAfterPaymentInterval(intervalDays int, paymentDate time.Time) time.Time {
+	// Ensure we're working in the application's timezone
+	paymentDate = ConvertToAppTimezone(paymentDate)
+
+	// For interval bills, add the interval to the payment date
+	// Normalize to midnight for consistency
+	nextDue := time.Date(paymentDate.Year(), paymentDate.Month(), paymentDate.Day(), 0, 0, 0, 0, GetAppLocation())
+	nextDue = nextDue.AddDate(0, 0, intervalDays)
 
 	return nextDue
 }

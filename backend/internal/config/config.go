@@ -37,7 +37,8 @@ type AuthConfig struct {
 
 // BillsConfig represents bills configuration
 type BillsConfig struct {
-	PaymentGraceDays int `mapstructure:"payment_grace_days"`
+	PaymentGraceDays       int `mapstructure:"payment_grace_days"`
+	MaximumBillingInterval int `mapstructure:"maximum_billing_interval"`
 }
 
 // LoggingConfig represents logging configuration
@@ -58,6 +59,7 @@ func Load() (*Config, error) {
 	v.SetDefault("database.dsn", "./williams.db")
 	v.SetDefault("auth.jwt_secret", "change-this-secret-in-production")
 	v.SetDefault("bills.payment_grace_days", 7)
+	v.SetDefault("bills.maximum_billing_interval", 365)
 	v.SetDefault("logging.level", "info")
 	v.SetDefault("logging.format", "json")
 	v.SetDefault("timezone", "UTC")

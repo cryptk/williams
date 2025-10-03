@@ -1,13 +1,22 @@
 # Architectural References
 
-This directory contains documentation about architectural decisions, migrations, and implementation details. These documents are primarily for Copilot's reference and provide historical context about why and how certain features were implemented.
+This directory contains documentation about architectural decisions and implementation details. These documents are primarily for Copilot's reference and provide context about why and how certain features were implemented.
 
 ## Documents
 
 ### Backend
 
-#### ZEROLOG_MIGRATION.md
-Details about the migration from standard library logging (`log`, `fmt.Print*`) to structured logging with rs/zerolog. Includes before/after comparisons and implementation details.
+#### BILL_RECURRENCE.md
+Comprehensive documentation of the bill recurrence system including:
+- Multiple recurrence types (fixed_date, interval, none)
+- Date calculation logic for each type
+- Data model and validation rules
+- Service layer implementation
+- Frontend integration
+- Common use cases and examples
+
+#### ZEROLOG_LOGGING.md
+Details about structured logging with rs/zerolog including implementation patterns and best practices.
 
 #### GORM_LOGGER_RECORD_NOT_FOUND.md
 Documents the implementation of `IgnoreRecordNotFoundError` functionality in the custom GORM logger to reduce log noise from expected "record not found" errors.
@@ -18,7 +27,6 @@ Complete implementation details of the timezone system including:
 - Database storage considerations
 - Date calculation internals
 - Integration between frontend and backend
-- Migration notes for existing data
 
 ### Frontend
 
@@ -33,9 +41,9 @@ Implementation details of the toast notification system including:
 
 These documents help maintain context about:
 - **Why** certain architectural decisions were made
-- **How** features were implemented
-- **What** changed during migrations or refactors
+- **How** features are implemented
 - **Trade-offs** considered during implementation
+- **Best practices** for working with the codebase
 
 ## For User-Facing Documentation
 

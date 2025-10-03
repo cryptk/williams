@@ -12,6 +12,7 @@ auth:
 
 bills:
   payment_grace_days: 7  # Number of days before next due date to consider a recurring bill as paid
+  maximum_billing_interval: 365  # Maximum number of days allowed for interval-based recurring bills
 
 logging:
   level: info  # debug, info, warn, error, fatal, panic, disabled

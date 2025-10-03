@@ -724,6 +724,152 @@ body {
   font-style: italic;
 }
 
+.tooltip-icon {
+  display: inline-block;
+  margin-left: 0.5rem;
+  font-size: 0.9rem;
+  color: var(--primary-color);
+  cursor: help;
+  border: 1px solid var(--primary-color);
+  border-radius: 50%;
+  width: 1.2rem;
+  height: 1.2rem;
+  text-align: center;
+  line-height: 1.2rem;
+  font-weight: bold;
+}
+
+/* Natural Language Recurrence Sentence Styles */
+.recurrence-sentence {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  font-size: 1rem;
+}
+
+.sentence-text {
+  color: var(--text-color);
+  font-weight: 500;
+}
+
+.inline-select {
+  padding: 0.4rem 0.6rem;
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  background-color: white;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: border-color 0.2s;
+  width: auto;
+  max-width: 120px;
+}
+
+.inline-select:focus {
+  outline: none;
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 2px rgba(74, 144, 226, 0.1);
+}
+
+.inline-number-input {
+  width: 4rem;
+  padding: 0.4rem 0.5rem;
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  background-color: white;
+  font-size: 1rem;
+  text-align: center;
+  transition: border-color 0.2s;
+  flex-shrink: 0;
+  max-width: 4rem;
+  min-width: 4rem;
+}
+
+/* Remove spinner arrows from number input */
+.inline-number-input::-webkit-outer-spin-button,
+.inline-number-input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+.inline-number-input[type="number"] {
+  -moz-appearance: textfield;
+  appearance: textfield;
+}
+
+.inline-number-input:focus {
+  outline: none;
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 2px rgba(74, 144, 226, 0.1);
+}
+
+.inline-date-picker {
+  padding: 0.4rem 0.6rem;
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  background-color: white;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: border-color 0.2s;
+  width: 8rem;
+  max-width: 8rem;
+  min-width: 8rem;
+  flex-shrink: 0;
+}
+
+.inline-date-picker:focus {
+  outline: none;
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 2px rgba(74, 144, 226, 0.1);
+}
+
+/* DatePicker custom styles */
+.react-datepicker-wrapper {
+  display: inline-block;
+}
+
+.react-datepicker__input-container {
+  display: inline-block;
+}
+
+.react-datepicker-popper {
+  z-index: 10000 !important;
+}
+
+.react-datepicker {
+  font-family: inherit;
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  box-shadow: var(--shadow);
+}
+
+.react-datepicker__header {
+  background-color: var(--primary-color);
+  border-bottom: none;
+  border-radius: 4px 4px 0 0;
+  padding-top: 0.5rem;
+}
+
+.react-datepicker__current-month,
+.react-datepicker__day-name {
+  color: white;
+}
+
+.react-datepicker__day--selected,
+.react-datepicker__day--keyboard-selected {
+  background-color: var(--primary-color);
+  color: white;
+}
+
+.react-datepicker__day:hover {
+  background-color: rgba(74, 144, 226, 0.1);
+}
+
+.react-datepicker__day--today {
+  font-weight: bold;
+  border: 1px solid var(--primary-color);
+}
+
 .checkbox-group {
   display: flex;
   align-items: center;

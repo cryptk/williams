@@ -4,16 +4,17 @@ import "time"
 
 // Bill represents a bill entity
 type Bill struct {
-	ID          string    `json:"id" gorm:"primaryKey"`
-	UserID      string    `json:"user_id" gorm:"not null"`
-	Name        string    `json:"name" gorm:"not null" binding:"required"`
-	Amount      float64   `json:"amount" gorm:"not null" binding:"required,gt=0"`
-	DueDay      int       `json:"due_day" gorm:"not null;check:due_day >= 1 AND due_day <= 31" binding:"required,min=1,max=31"`
-	CategoryID  *string   `json:"category_id"`
-	IsRecurring bool      `json:"is_recurring" gorm:"default:0"`
-	Notes       string    `json:"notes"`
-	CreatedAt   time.Time `json:"created_at" gorm:"autoCreateTime" binding:"-"` // Read-only, managed by backend
-	UpdatedAt   time.Time `json:"updated_at" gorm:"autoUpdateTime" binding:"-"` // Read-only, managed by backend
+	ID             string     `json:"id" gorm:"primaryKey"`
+	UserID         string     `json:"user_id" gorm:"not null"`
+	Name           string     `json:"name" gorm:"not null" binding:"required"`
+	Amount         float64    `json:"amount" gorm:"not null" binding:"required,gt=0"`
+	RecurrenceDays int        `json:"recurrence_days" gorm:"not null;check:recurrence_days >= 1" binding:"required,min=1"`
+	CategoryID     *string    `json:"category_id"`
+	RecurrenceType string     `json:"recurrence_type" gorm:"default:none;check:recurrence_type IN ('none', 'fixed_date', 'interval')" binding:"oneof=none fixed_date interval"`
+	StartDate      *time.Time `json:"start_date,omitempty"` // Used for interval and one-time bills
+	Notes          string     `json:"notes"`
+	CreatedAt      time.Time  `json:"created_at" gorm:"autoCreateTime" binding:"-"` // Read-only, managed by backend
+	UpdatedAt      time.Time  `json:"updated_at" gorm:"autoUpdateTime" binding:"-"` // Read-only, managed by backend
 
 	// Computed fields (not stored in database)
 	IsPaid       bool       `json:"is_paid" gorm:"-"`
