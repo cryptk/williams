@@ -163,7 +163,9 @@ func (s *BillService) calculateNextDueDate(bill *models.Bill) (*time.Time, *time
 	}
 
 	return &nextDue, lastPaidPtr, nil
-} // calculateIsPaid determines if a bill is considered paid
+}
+
+// calculateIsPaid determines if a bill is considered paid
 func (s *BillService) calculateIsPaid(bill *models.Bill) (bool, error) {
 	if bill.RecurrenceType != "none" {
 		// For recurring bills (fixed_date or interval): check if next due date is at least grace_days in the future

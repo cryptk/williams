@@ -153,7 +153,7 @@ export function Bills() {
       name: "",
       amount: "",
       recurrence_days: "",
-      category: "",
+      category_id: "",
       is_paid: false,
       recurrence_type: "fixed_date",
       start_date: null,
@@ -434,15 +434,16 @@ export function Bills() {
               </div>
 
               <div class="form-group">
-                <label>Recurrence *</label>
-                <div class="recurrence-sentence">
-                  <span class="sentence-text">Due</span>
+                <label for="recurrence_type">Recurrence *</label>
+                <div class="recurrence-sentence" role="group" aria-labelledby="recurrence-label">
+                  <span id="recurrence-label" class="sentence-text">Due</span>
                   <select
                     id="recurrence_type"
                     name="recurrence_type"
                     value={formData.recurrence_type}
                     onChange={handleInputChange}
                     class="inline-select"
+                    aria-label="Recurrence type"
                     required
                   >
                     <option value="none">once</option>
@@ -455,17 +456,19 @@ export function Bills() {
                       <span class="sentence-text">on the</span>
                       <input
                         type="number"
-                        id="recurrence_days"
+                        id="recurrence_days_fixed"
                         name="recurrence_days"
                         value={formData.recurrence_days}
                         onChange={handleInputChange}
                         class="inline-number-input"
+                        aria-label="Day of month (1-31)"
+                        aria-describedby="day-suffix-fixed"
                         required
                         min="1"
                         max="31"
                         placeholder="15"
                       />
-                      <span class="sentence-text">
+                      <span id="day-suffix-fixed" class="sentence-text">
                         {formData.recurrence_days
                           ? getDaySuffix(parseInt(formData.recurrence_days))
                           : "th"}{" "}
@@ -478,17 +481,19 @@ export function Bills() {
                     <>
                       <input
                         type="number"
-                        id="recurrence_days"
+                        id="recurrence_days_interval"
                         name="recurrence_days"
                         value={formData.recurrence_days}
                         onChange={handleInputChange}
                         class="inline-number-input"
+                        aria-label="Recurrence interval in days (1-365)"
+                        aria-describedby="interval-suffix"
                         required
                         min="1"
                         max="365"
                         placeholder="14"
                       />
-                      <span class="sentence-text">
+                      <span id="interval-suffix" class="sentence-text">
                         day{formData.recurrence_days !== "1" ? "s" : ""}{" "}
                         starting on
                       </span>
@@ -498,8 +503,11 @@ export function Bills() {
                         dateFormat="MM/dd/yyyy"
                         placeholderText="Select date"
                         className="inline-date-picker"
+                        ariaLabelledBy="interval-start-label"
+                        id="start_date_interval"
                         required
                       />
+                      <span id="interval-start-label" class="visually-hidden">Start date for interval recurrence</span>
                     </>
                   )}
 
@@ -512,8 +520,11 @@ export function Bills() {
                         dateFormat="MM/dd/yyyy"
                         placeholderText="Select date"
                         className="inline-date-picker"
+                        ariaLabelledBy="due-date-label"
+                        id="start_date_once"
                         required
                       />
+                      <span id="due-date-label" class="visually-hidden">Due date for one-time bill</span>
                     </>
                   )}
                 </div>
