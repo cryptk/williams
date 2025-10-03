@@ -4,7 +4,12 @@ export function Header({ user, onLogout }) {
   return (
     <header class="header">
       <div class="container">
-        <h1 class="logo">💵 Williams</h1>
+        <h1 class="logo">
+          Williams{" "}
+          <span style={{ fontSize: "0.7em", color: "#888" }}>
+            {typeof __APP_VERSION__ !== "undefined" ? __APP_VERSION__ : "dev"}
+          </span>
+        </h1>
         <nav class="nav">
           <Link activeClassName="active" href="/">
             Dashboard

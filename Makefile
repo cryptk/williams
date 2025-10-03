@@ -2,6 +2,10 @@
 
 .PHONY: all build build/frontend build/backend run/frontend run/backend clean clean/frontend clean/backend lint/frontend lint/backend test/frontend test/backend help
 
+GO_MODULE_NAME := github.com/cryptk/williams
+VERSION ?= $(shell git describe --tags --always --dirty)
+LDFLAGS := -ldflags "-X github.com/cryptk/williams/internal/config.Version=${VERSION}"
+
 
 all: build/frontend build/backend
 run: build/frontend build/backend
@@ -18,15 +22,18 @@ run: build/frontend build/backend
 
 build: build/frontend build/backend
 
-build/frontend:
-	rm -rf build/dist
+build/frontend: clean/frontend
+	@echo "Building frontend with VERSION=${VERSION}"
 	cd frontend && npm install
-	cd frontend && npm run build -- --emptyOutDir --outDir ../build/dist
+	cd frontend && VERSION=${VERSION} npm run build -- --emptyOutDir --outDir ../build/dist
+	@echo "Frontend built successfully."
 
 build/backend: clean/backend
+	@echo "Building backend with VERSION=${VERSION}"
 	mkdir -p build
 	cd backend && go mod download
-	cd backend && go build -o ../build/williams ./cmd/server
+	cd backend && go build ${LDFLAGS} -o ../build/williams ./cmd/server
+	@echo "Backend built successfully."
 
 run/frontend:
 	cd frontend && npm install && npm run dev
