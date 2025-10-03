@@ -214,6 +214,6 @@ func (s *Server) healthCheck(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{
 		"status":  "ok",
 		"service": "williams",
-		"version": "0.1.0",
+		"version": config.Version,
 	})
 }

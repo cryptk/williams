@@ -7,6 +7,9 @@ import (
 	"github.com/spf13/viper"
 )
 
+// Version is set at build time via -ldflags
+var Version string = "dev"
+
 // Config represents the application configuration
 type Config struct {
 	Server   ServerConfig   `mapstructure:"server"`

@@ -48,7 +48,6 @@ func main() {
 	// Initialize API server
 	server := api.NewServer(cfg, db)
 
-	// Start server in a goroutine
 	go func() {
 		err := server.Start()
 		if err != nil && err.Error() != "http: Server closed" {
@@ -57,9 +56,10 @@ func main() {
 	}()
 
 	log.Info().
+		Str("version", config.Version).
 		Str("host", cfg.Server.Host).
 		Int("port", cfg.Server.Port).
-		Msgf("Williams server started on %s:%d", cfg.Server.Host, cfg.Server.Port)
+		Msgf("Williams started at %s:%d", cfg.Server.Host, cfg.Server.Port)
 
 	// Wait for interrupt signal to gracefully shutdown the server
 	quit := make(chan os.Signal, 1)
