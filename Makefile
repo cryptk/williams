@@ -1,14 +1,35 @@
 # Williams Project Makefile
 
-.PHONY: all build build/frontend build/backend run/frontend run/backend clean clean/frontend clean/backend lint/frontend lint/backend test/frontend test/backend help
+
+# List of all targets for .PHONY
+.PHONY: all build build/frontend build/backend run/frontend run/backend clean clean/frontend clean/backend lint/frontend lint/backend test/frontend test/backend help populate-demo frontend frontend-dev backend backend-dev frontend-backend frontend-backend-dev
 
 GO_MODULE_NAME := github.com/cryptk/williams
 VERSION ?= $(shell git describe --tags --always --dirty)
 LDFLAGS := -ldflags "-X github.com/cryptk/williams/internal/config.Version=${VERSION}"
 
 
-all: build/frontend build/backend
-run: build/frontend build/backend
+all: build/frontend build/backend ## Build both frontend and backend
+
+build: all ## Synonym for all
+
+build/docker: ## Build Docker image
+	docker build --progress=plain --build-arg VERSION=${VERSION} -t williams:${VERSION} -t williams:latest .
+
+build/frontend: clean/frontend ## Build frontend production artifacts
+	@echo "Building frontend with VERSION=${VERSION}"
+	cd frontend && npm install
+	cd frontend && VERSION=${VERSION} npm run build -- --emptyOutDir --outDir ../build/dist
+	@echo "Frontend built successfully."
+
+build/backend: clean/backend ## Build backend binary
+	@echo "Building backend with VERSION=${VERSION}"
+	mkdir -p build
+	cd backend && go mod download
+	cd backend && go build ${LDFLAGS} -o ../build/williams ./cmd/server
+	@echo "Backend built successfully."
+
+run: build/frontend build/backend ## Build and run both frontend and backend
 	if [ -e ./build/config.yaml ]; then \
 		echo "Using existing config.yaml"; \
 	elif [ -e ./backend/configs/config.yaml ]; then \
@@ -20,76 +41,43 @@ run: build/frontend build/backend
 	fi
 	cd ./build && ./williams
 
-build: build/frontend build/backend
-
-build/frontend: clean/frontend
-	@echo "Building frontend with VERSION=${VERSION}"
-	cd frontend && npm install
-	cd frontend && VERSION=${VERSION} npm run build -- --emptyOutDir --outDir ../build/dist
-	@echo "Frontend built successfully."
-
-build/backend: clean/backend
-	@echo "Building backend with VERSION=${VERSION}"
-	mkdir -p build
-	cd backend && go mod download
-	cd backend && go build ${LDFLAGS} -o ../build/williams ./cmd/server
-	@echo "Backend built successfully."
-
-run/frontend:
+run/frontend: ## Run frontend in development mode
 	cd frontend && npm install && npm run dev
 
-run/backend:
+run/backend: ## Run backend in development mode
 	cd backend && go run ./cmd/server/main.go
 
-# Remove build artifacts
-clean: clean/frontend clean/backend
-
-clean/deep: clean/frontend/deep clean/backend/deep
+clean: clean/frontend clean/backend ## Clean all build artifacts
 	rm -rf build
 
-clean/frontend:
+clean/deep: clean/frontend/deep clean/backend/deep ## Deep clean all build artifacts including databases and node modules
+	rm -rf build
+
+clean/frontend: ## Clean frontend build artifacts
 	rm -rf build/dist frontend/dist
 
-clean/frontend/deep: clean/frontend
+clean/frontend/deep: clean/frontend ## Deep clean frontend including node modules
 	rm -rf frontend/node_modules
 
-clean/backend:
+clean/backend: ## Clean backend build artifacts
 	rm -f build/williams backend/williams backend/server
 
-clean/backend/deep: clean/backend
+clean/backend/deep: clean/backend ## Deep clean backend including database
 	rm -f backend/williams.db
 
-# Lint frontend code
-lint/frontend:
+lint/frontend: ## Lint frontend code
 	cd frontend && npm run lint || echo "No linter configured."
 
-# Lint backend code
-lint/backend:
+lint/backend: ## Lint backend code
 	cd backend && go fmt ./... && (golint ./... || echo "golint not installed.")
 
-# Run frontend tests
-test/frontend:
+test/frontend: ## Run frontend tests
 	cd frontend && npm test || echo "No frontend tests configured."
 
-# Run backend tests
-test/backend:
+test/backend: ## Run backend tests
 	cd backend && go test ./...
 
-# Show help
-help:
-	@echo "Available targets:"
-	@echo "  all               Build both frontend and backend"
-	@echo "  build             Same as 'all' (builds both)"
-	@echo "  build/frontend    Build frontend production artifacts (to build/dist)"
-	@echo "  build/backend     Build backend production binary (to build/williams)"
-	@echo "  run/frontend      Run frontend in dev mode"
-	@echo "  run/backend       Run backend in dev mode"
-	@echo "  run               Build everything and run the backend binary from build/"
-	@echo "  clean             Remove all build artifacts in build/"
-	@echo "  clean/frontend    Remove frontend build artifacts (build/dist)"
-	@echo "  clean/backend     Remove backend build binary (build/williams)"
-	@echo "  lint/frontend     Lint frontend code"
-	@echo "  lint/backend      Lint backend code"
-	@echo "  test/frontend     Run frontend tests"
-	@echo "  test/backend      Run backend tests"
-	@echo "  help              Show this help message"
+help: ## Show this help message
+	@echo "\nUsage: make <target>\n"
+	@awk 'BEGIN {FS = ":| #"} /^[a-zA-Z0-9_./-]+:.*##/ { printf "\033[36m%-24s\033[0m %s\n", $$1, $$3 }' $(MAKEFILE_LIST)
+	@echo ""
