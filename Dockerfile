@@ -2,6 +2,7 @@
 
 # --- Backend build stage ---
 FROM golang:1.25.1-alpine3.22 AS backend-builder
+ARG VERSION="dev"
 WORKDIR /app
 # Install build dependencies for CGO and sqlite3
 RUN apk add --no-cache gcc musl-dev sqlite-dev
@@ -12,13 +13,14 @@ RUN go mod download
 COPY backend/ ./backend/
 WORKDIR /app/backend
 # Build with CGO enabled for go-sqlite3
-RUN go build -o /williams ./cmd/server
+RUN go build -ldflags "-X github.com/cryptk/williams/internal/config.Version=${VERSION}" -o /williams ./cmd/server
 
 # --- Frontend build stage ---
 FROM node:24-alpine3.22 AS frontend-builder
+ARG VERSION="dev"
 COPY frontend/ /frontend
 WORKDIR /frontend
-RUN npm install && npm run build
+RUN npm install && VERSION=${VERSION} npm run build
 
 # --- Final minimal image ---
 FROM alpine:3.22
