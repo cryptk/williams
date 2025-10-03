@@ -1,4 +1,4 @@
-import { Link } from "preact-router";
+import { Link } from "preact-router/match";
 
 export function Header({ user, onLogout }) {
   return (
