@@ -14,7 +14,7 @@ all: build/frontend build/backend ## Build both frontend and backend
 build: all ## Synonym for all
 
 build/docker: ## Build Docker image
-	docker build --build-arg VERSION=${VERSION} -t williams:${VERSION} -t williams:latest .
+	docker build --progress=plain --build-arg VERSION=${VERSION} -t williams:${VERSION} -t williams:latest .
 
 build/frontend: clean/frontend ## Build frontend production artifacts
 	@echo "Building frontend with VERSION=${VERSION}"
