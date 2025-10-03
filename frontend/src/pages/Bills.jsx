@@ -435,8 +435,14 @@ export function Bills() {
 
               <div class="form-group">
                 <label for="recurrence_type">Recurrence *</label>
-                <div class="recurrence-sentence" role="group" aria-labelledby="recurrence-label">
-                  <span id="recurrence-label" class="sentence-text">Due</span>
+                <div
+                  class="recurrence-sentence"
+                  role="group"
+                  aria-labelledby="recurrence-label"
+                >
+                  <span id="recurrence-label" class="sentence-text">
+                    Due
+                  </span>
                   <select
                     id="recurrence_type"
                     name="recurrence_type"
@@ -507,7 +513,9 @@ export function Bills() {
                         id="start_date_interval"
                         required
                       />
-                      <span id="interval-start-label" class="visually-hidden">Start date for interval recurrence</span>
+                      <span id="interval-start-label" class="visually-hidden">
+                        Start date for interval recurrence
+                      </span>
                     </>
                   )}
 
@@ -524,7 +532,9 @@ export function Bills() {
                         id="start_date_once"
                         required
                       />
-                      <span id="due-date-label" class="visually-hidden">Due date for one-time bill</span>
+                      <span id="due-date-label" class="visually-hidden">
+                        Due date for one-time bill
+                      </span>
                     </>
                   )}
                 </div>
