@@ -1,0 +1,23 @@
+/* Confirmation Modal styles - extracted from main.css */
+.confirm-modal {
+  max-width: 400px;
+}
+
+.confirm-content {
+  padding: 2rem;
+}
+
+.confirm-content p {
+  margin-bottom: 1rem;
+  line-height: 1.6;
+}
+
+.confirm-content .warning-text {
+  color: var(--danger-color);
+  font-size: 0.9rem;
+  font-style: italic;
+}
+
+.confirm-content strong {
+  color: var(--primary-color);
+}

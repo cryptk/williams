@@ -1,5 +1,6 @@
 import { useState } from "preact/hooks";
-import { login, register } from "../services/auth";
+import { login, register } from "../../services/auth";
+import "./style.css";
 
 export function Auth({ onLoginSuccess }) {
   const [isLogin, setIsLogin] = useState(true);

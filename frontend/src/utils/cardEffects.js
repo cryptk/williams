@@ -47,7 +47,6 @@ export function initCardShadows() {
     // Bill cards
     const billCards = document.querySelectorAll(".bill-card");
     billCards.forEach((card) => {
-      console.log("Attaching event listeners to bill card: ", card);
       card.addEventListener("mousemove", (e) => updateShadow(card, e));
       card.addEventListener("mouseleave", () => resetShadow(card));
     });
@@ -55,7 +54,6 @@ export function initCardShadows() {
     // Stat cards
     const statCards = document.querySelectorAll(".stat-card");
     statCards.forEach((card) => {
-      console.log("Attaching event listeners to stat card: ", card);
       card.addEventListener("mousemove", (e) => updateShadow(card, e));
       card.addEventListener("mouseleave", () => resetShadow(card));
     });
@@ -63,7 +61,6 @@ export function initCardShadows() {
     // Category cards
     const categoryCards = document.querySelectorAll(".category-card");
     categoryCards.forEach((card) => {
-      console.log("Attaching event listeners to category card: ", card);
       card.addEventListener("mousemove", (e) => updateShadow(card, e));
       card.addEventListener("mouseleave", () => resetShadow(card));
     });

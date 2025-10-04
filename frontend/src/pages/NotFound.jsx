@@ -1,4 +1,5 @@
 import { Link } from "preact-router/match";
+import "./NotFound.css";
 
 export function NotFound() {
   return (
