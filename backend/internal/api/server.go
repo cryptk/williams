@@ -84,9 +84,9 @@ func NewServer(cfg *config.Config, db *database.DB) *Server {
 
 	// Initialize repositories
 	userRepo := repository.NewUserRepository(db.DB)
-	billRepo := repository.NewBillRepository(db.DB)
+	billRepo := repository.NewBillRepository()
 	categoryRepo := repository.NewCategoryRepository(db.DB)
-	paymentRepo := repository.NewPaymentRepository(db.DB)
+	paymentRepo := repository.NewPaymentRepository()
 
 	// Initialize services
 	authService := services.NewAuthService(userRepo, categoryRepo, cfg.Auth.JWTSecret)
@@ -101,13 +101,13 @@ func NewServer(cfg *config.Config, db *database.DB) *Server {
 		categoryService: categoryService,
 	}
 
-	server.setupRoutes()
+	server.setupRoutes(db)
 
 	return server
 }
 
 // setupRoutes configures all API routes
-func (s *Server) setupRoutes() {
+func (s *Server) setupRoutes(db *database.DB) {
 
 	// Health check
 	s.router.GET("/health", s.healthCheck)
@@ -125,6 +125,7 @@ func (s *Server) setupRoutes() {
 		// Protected routes (require authentication)
 		protected := v1.Group("")
 		protected.Use(middleware.AuthMiddleware(s.authService))
+		protected.Use(middleware.ScopedDBMiddleware(db))
 		{
 			// User endpoints
 			protected.GET("/auth/me", s.getCurrentUser)

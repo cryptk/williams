@@ -10,15 +10,15 @@ import (
 
 // CategoryRepository defines the interface for category data operations
 type CategoryRepository interface {
-	Create(category *models.Category) error
-	ListByUser(userID string) ([]*models.Category, error)
-	DeleteByUser(id string, userID string) error
-	CreateDefaultCategories(userID string) error
+	Create(scopedDB *gorm.DB, category *models.Category) error
+	List(scopedDB *gorm.DB) ([]*models.Category, error)
+	Delete(scopedDB *gorm.DB, id string) error
+	CreateDefaults(userID string) error
 }
 
 // categoryRepository implements CategoryRepository
 type categoryRepository struct {
-	db *gorm.DB
+	db *gorm.DB // Only used for CreateDefaults (unauthenticated user registration)
 }
 
 // NewCategoryRepository creates a new category repository
@@ -27,36 +27,36 @@ func NewCategoryRepository(db *gorm.DB) CategoryRepository {
 }
 
 // Create creates a new category
-func (r *categoryRepository) Create(category *models.Category) error {
+func (r *categoryRepository) Create(scopedDB *gorm.DB, category *models.Category) error {
 	if category.ID == "" {
 		category.ID = uuid.New().String()
 	}
-	return r.db.Create(category).Error
+	return scopedDB.Session(&gorm.Session{}).Create(category).Error
 }
 
-// ListByUser retrieves all categories for a specific user
-func (r *categoryRepository) ListByUser(userID string) ([]*models.Category, error) {
+// List retrieves all categories
+func (r *categoryRepository) List(scopedDB *gorm.DB) ([]*models.Category, error) {
 	var categories []*models.Category
-	if err := r.db.Where("user_id = ?", userID).Order("name ASC").Find(&categories).Error; err != nil {
+	if err := scopedDB.Session(&gorm.Session{}).Order("name ASC").Find(&categories).Error; err != nil {
 		return nil, err
 	}
 	return categories, nil
 }
 
-// DeleteByUser deletes a category by ID and verifies ownership
-func (r *categoryRepository) DeleteByUser(id string, userID string) error {
-	result := r.db.Delete(&models.Category{}, "id = ? AND user_id = ?", id, userID)
+// Delete deletes a category by ID
+func (r *categoryRepository) Delete(scopedDB *gorm.DB, id string) error {
+	result := scopedDB.Session(&gorm.Session{}).Delete(&models.Category{}, "id = ?", id)
 	if result.Error != nil {
 		return result.Error
 	}
 	if result.RowsAffected == 0 {
-		return fmt.Errorf("category not found for specified user")
+		return fmt.Errorf("category not found")
 	}
 	return nil
 }
 
-// CreateDefaultCategories creates default categories for a new user
-func (r *categoryRepository) CreateDefaultCategories(userID string) error {
+// CreateDefaults creates default categories for a new user
+func (r *categoryRepository) CreateDefaults(userID string) error {
 	defaultCategories := []models.Category{
 		{ID: uuid.New().String(), UserID: userID, Name: "Utilities", Color: "#3498db"},
 		{ID: uuid.New().String(), UserID: userID, Name: "Rent", Color: "#e74c3c"},

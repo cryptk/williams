@@ -11,39 +11,37 @@ import (
 
 // BillRepository defines the interface for bill data operations
 type BillRepository interface {
-	Create(bill *models.Bill) error
-	GetByIDAndUser(id string, userID string) (*models.Bill, error)
-	GetByUserID(userID string) ([]*models.Bill, error)
-	UpdateByUser(bill *models.Bill, userID string) error
-	DeleteByUser(id string, userID string) error
-	GetStatsByUser(userID string) (*models.BillStats, error)
+	Create(scopedDB *gorm.DB, bill *models.Bill) error
+	Get(scopedDB *gorm.DB, id string) (*models.Bill, error)
+	List(scopedDB *gorm.DB) ([]*models.Bill, error)
+	Update(scopedDB *gorm.DB, bill *models.Bill) error
+	Delete(scopedDB *gorm.DB, id string) error
+	GetStats(scopedDB *gorm.DB) (*models.BillStats, error)
 }
 
 // billRepository implements BillRepository
-type billRepository struct {
-	db *gorm.DB
-}
+type billRepository struct{}
 
 // NewBillRepository creates a new bill repository
-func NewBillRepository(db *gorm.DB) BillRepository {
-	return &billRepository{db: db}
+func NewBillRepository() BillRepository {
+	return &billRepository{}
 }
 
 // Create creates a new bill
-func (r *billRepository) Create(bill *models.Bill) error {
+func (r *billRepository) Create(scopedDB *gorm.DB, bill *models.Bill) error {
 	if bill.ID == "" {
 		bill.ID = uuid.New().String()
 	}
 	bill.CreatedAt = utils.NowInAppTimezone()
 	bill.UpdatedAt = utils.NowInAppTimezone()
 
-	return r.db.Create(bill).Error
+	return scopedDB.Session(&gorm.Session{}).Create(bill).Error
 }
 
-// GetByIDAndUser retrieves a bill by ID and verifies ownership
-func (r *billRepository) GetByIDAndUser(id string, userID string) (*models.Bill, error) {
+// Get retrieves a bill by ID
+func (r *billRepository) Get(scopedDB *gorm.DB, id string) (*models.Bill, error) {
 	var bill models.Bill
-	if err := r.db.First(&bill, "id = ? AND user_id = ?", id, userID).Error; err != nil {
+	if err := scopedDB.Session(&gorm.Session{}).First(&bill, "id = ?", id).Error; err != nil {
 		if err == gorm.ErrRecordNotFound {
 			return nil, fmt.Errorf("bill not found")
 		}
@@ -52,22 +50,22 @@ func (r *billRepository) GetByIDAndUser(id string, userID string) (*models.Bill,
 	return &bill, nil
 }
 
-// GetByUserID retrieves bills for a specific user
-func (r *billRepository) GetByUserID(userID string) ([]*models.Bill, error) {
+// List retrieves all bills
+func (r *billRepository) List(scopedDB *gorm.DB) ([]*models.Bill, error) {
 	var bills []*models.Bill
-	if err := r.db.Where("user_id = ?", userID).Order("name ASC").Find(&bills).Error; err != nil {
+	if err := scopedDB.Session(&gorm.Session{}).Order("name ASC").Find(&bills).Error; err != nil {
 		return nil, err
 	}
 	return bills, nil
 }
 
-// UpdateByUser updates an existing bill and verifies ownership
-func (r *billRepository) UpdateByUser(bill *models.Bill, userID string) error {
-	// Fetch the existing bill to preserve CreatedAt and verify ownership
+// Update updates an existing bill
+func (r *billRepository) Update(scopedDB *gorm.DB, bill *models.Bill) error {
+	// Fetch the existing bill to preserve CreatedAt
 	var existing models.Bill
-	if err := r.db.First(&existing, "id = ? AND user_id = ?", bill.ID, userID).Error; err != nil {
+	if err := scopedDB.Session(&gorm.Session{}).First(&existing, "id = ?", bill.ID).Error; err != nil {
 		if err == gorm.ErrRecordNotFound {
-			return fmt.Errorf("bill not found for specified user")
+			return fmt.Errorf("bill not found")
 		}
 		return err
 	}
@@ -77,38 +75,38 @@ func (r *billRepository) UpdateByUser(bill *models.Bill, userID string) error {
 	bill.UserID = existing.UserID
 	bill.UpdatedAt = utils.NowInAppTimezone()
 
-	return r.db.Save(bill).Error
+	return scopedDB.Session(&gorm.Session{}).Save(bill).Error
 }
 
-// DeleteByUser deletes a bill by ID and verifies ownership
-func (r *billRepository) DeleteByUser(id string, userID string) error {
-	result := r.db.Delete(&models.Bill{}, "id = ? AND user_id = ?", id, userID)
+// Delete deletes a bill by ID
+func (r *billRepository) Delete(scopedDB *gorm.DB, id string) error {
+	result := scopedDB.Session(&gorm.Session{}).Delete(&models.Bill{}, "id = ?", id)
 	if result.Error != nil {
 		return result.Error
 	}
 	if result.RowsAffected == 0 {
-		return fmt.Errorf("bill not found for specified user")
+		return fmt.Errorf("bill not found")
 	}
 	return nil
 }
 
-// GetStatsByUser calculates bill statistics for a specific user
-func (r *billRepository) GetStatsByUser(userID string) (*models.BillStats, error) {
+// GetStats calculates bill statistics
+func (r *billRepository) GetStats(scopedDB *gorm.DB) (*models.BillStats, error) {
 	var stats models.BillStats
 
-	// Total bills count for user
+	// Total bills count
 	var totalCount int64
-	if err := r.db.Model(&models.Bill{}).Where("user_id = ?", userID).Count(&totalCount).Error; err != nil {
+	if err := scopedDB.Model(&models.Bill{}).Count(&totalCount).Error; err != nil {
 		return nil, err
 	}
 	stats.TotalBills = int(totalCount)
 
-	// Total amount for user
+	// Total amount - use Session to get fresh query builder without inherited clauses
 	type Result struct {
 		Total float64
 	}
 	var result Result
-	if err := r.db.Model(&models.Bill{}).Where("user_id = ?", userID).Select("COALESCE(SUM(amount), 0) as total").Scan(&result).Error; err != nil {
+	if err := scopedDB.Session(&gorm.Session{}).Model(&models.Bill{}).Select("COALESCE(SUM(amount), 0) as total").Scan(&result).Error; err != nil {
 		return nil, err
 	}
 	stats.TotalAmount = result.Total

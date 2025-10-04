@@ -8,6 +8,7 @@ import (
 	"github.com/cryptk/williams/internal/models"
 	"github.com/cryptk/williams/internal/repository"
 	"github.com/cryptk/williams/pkg/utils"
+	"gorm.io/gorm"
 )
 
 // BillService handles business logic for bills
@@ -26,24 +27,28 @@ func NewBillService(repo repository.BillRepository, paymentRepo repository.Payme
 	}
 }
 
-// CreateBill creates a new bill
-func (s *BillService) CreateBill(bill *models.Bill) error {
+// =============================================================================
+// Bill CRUD Methods
+// =============================================================================
+
+// Create creates a new bill
+func (s *BillService) Create(scopedDB *gorm.DB, bill *models.Bill) error {
 	// Validate recurrence_days based on recurrence_type
-	if err := s.validateBillRecurrence(bill); err != nil {
+	if err := s.validateRecurrence(bill); err != nil {
 		return err
 	}
-	return s.repo.Create(bill)
+	return s.repo.Create(scopedDB, bill)
 }
 
-// GetBillByUser retrieves a bill by ID and verifies ownership
-func (s *BillService) GetBillByUser(id string, userID string) (*models.Bill, error) {
-	bill, err := s.repo.GetByIDAndUser(id, userID)
+// Get retrieves a bill by ID
+func (s *BillService) Get(scopedDB *gorm.DB, id string) (*models.Bill, error) {
+	bill, err := s.repo.Get(scopedDB, id)
 	if err != nil {
 		return nil, err
 	}
 
 	// Calculate next due date
-	nextDue, lastPaid, err := s.calculateNextDueDate(bill)
+	nextDue, lastPaid, err := s.calculateNextDueDate(scopedDB, bill)
 	if err != nil {
 		return nil, err
 	}
@@ -51,7 +56,7 @@ func (s *BillService) GetBillByUser(id string, userID string) (*models.Bill, err
 	bill.LastPaidDate = lastPaid
 
 	// Calculate is_paid status
-	isPaid, err := s.calculateIsPaid(bill)
+	isPaid, err := s.calculateIsPaid(scopedDB, bill)
 	if err != nil {
 		return nil, err
 	}
@@ -60,65 +65,105 @@ func (s *BillService) GetBillByUser(id string, userID string) (*models.Bill, err
 	return bill, nil
 }
 
-// CreatePayment creates a payment for a bill
-func (s *BillService) CreatePayment(payment *models.Payment) error {
-	// Create the payment
-	return s.paymentRepo.Create(payment)
+// GetStats retrieves bill statistics
+func (s *BillService) GetStats(scopedDB *gorm.DB) (*models.BillStats, error) {
+	stats, err := s.repo.GetStats(scopedDB)
+	if err != nil {
+		return nil, err
+	}
+
+	// Get all bills for user to calculate paid/unpaid stats
+	bills, err := s.List(scopedDB)
+	if err != nil {
+		return nil, err
+	}
+
+	// Calculate paid/unpaid counts and due amount based on computed is_paid field
+	for _, bill := range bills {
+		if bill.IsPaid {
+			stats.PaidBills++
+		} else {
+			stats.UnpaidBills++
+			stats.DueAmount += bill.Amount
+		}
+	}
+
+	return stats, nil
 }
 
-// CreatePaymentByUser creates a payment for a bill and verifies bill ownership
-func (s *BillService) CreatePaymentByUser(payment *models.Payment, userID string) error {
+// List retrieves all bills
+func (s *BillService) List(scopedDB *gorm.DB) ([]*models.Bill, error) {
+	bills, err := s.repo.List(scopedDB)
+	if err != nil {
+		return nil, err
+	}
+	return s.enrichWithPaymentStatus(scopedDB, bills)
+}
+
+// Update updates an existing bill
+func (s *BillService) Update(scopedDB *gorm.DB, bill *models.Bill) error {
+	// Validate recurrence_days based on recurrence_type
+	if err := s.validateRecurrence(bill); err != nil {
+		return err
+	}
+	return s.repo.Update(scopedDB, bill)
+}
+
+// Delete deletes a bill
+func (s *BillService) Delete(scopedDB *gorm.DB, id string) error {
+	return s.repo.Delete(scopedDB, id)
+}
+
+// =============================================================================
+// Payment CRUD Methods
+// =============================================================================
+
+// CreatePayment creates a payment for a bill
+func (s *BillService) CreatePayment(scopedDB *gorm.DB, payment *models.Payment) error {
 	// First verify the bill exists and belongs to the user
-	_, err := s.repo.GetByIDAndUser(payment.BillID, userID)
+	_, err := s.repo.Get(scopedDB, payment.BillID)
 	if err != nil {
 		return err
 	}
 	// Create the payment
-	return s.paymentRepo.Create(payment)
+	return s.paymentRepo.Create(scopedDB, payment)
 }
 
-// GetPaymentsByBillAndUser retrieves all payments for a bill and verifies ownership
-func (s *BillService) GetPaymentsByBillAndUser(billID string, userID string) ([]*models.Payment, error) {
-	return s.paymentRepo.GetByBillIDAndUser(billID, userID)
+// ListPayments retrieves all payments for a bill
+func (s *BillService) ListPayments(scopedDB *gorm.DB, billID string) ([]*models.Payment, error) {
+	return s.paymentRepo.List(scopedDB, billID)
 }
 
-// DeletePaymentByUser deletes a payment by ID and verifies bill ownership
-func (s *BillService) DeletePaymentByUser(paymentID string, userID string) error {
-	return s.paymentRepo.DeleteByUser(paymentID, userID)
+// DeletePayment deletes a payment
+func (s *BillService) DeletePayment(scopedDB *gorm.DB, paymentID string) error {
+	return s.paymentRepo.Delete(scopedDB, paymentID)
 }
 
-// ListBillsByUser retrieves all bills for a specific user
-func (s *BillService) ListBillsByUser(userID string) ([]*models.Bill, error) {
-	bills, err := s.repo.GetByUserID(userID)
+// =============================================================================
+// Private Helper Methods
+// =============================================================================
+
+// calculateIsPaid determines if a bill is considered paid
+func (s *BillService) calculateIsPaid(scopedDB *gorm.DB, bill *models.Bill) (bool, error) {
+	if bill.RecurrenceType != "none" {
+		// For recurring bills (fixed_date or interval): check if next due date is at least grace_days in the future
+		if bill.NextDueDate == nil {
+			return false, nil
+		}
+		graceDays := time.Duration(s.config.Bills.PaymentGraceDays) * 24 * time.Hour
+		return time.Until(*bill.NextDueDate) >= graceDays, nil
+	}
+
+	// For non-recurring bills: check if there's a payment record
+	payment, err := s.paymentRepo.GetLatest(scopedDB, bill.ID)
 	if err != nil {
-		return nil, err
+		return false, err
 	}
-	return s.enrichBillsWithPaymentStatus(bills)
-}
-
-// enrichBillsWithPaymentStatus calculates the is_paid status and next_due_date for bills
-func (s *BillService) enrichBillsWithPaymentStatus(bills []*models.Bill) ([]*models.Bill, error) {
-	for _, bill := range bills {
-		// Calculate next due date
-		nextDue, lastPaid, err := s.calculateNextDueDate(bill)
-		if err != nil {
-			return nil, err
-		}
-		bill.NextDueDate = nextDue
-		bill.LastPaidDate = lastPaid
-
-		// Calculate is_paid status
-		isPaid, err := s.calculateIsPaid(bill)
-		if err != nil {
-			return nil, err
-		}
-		bill.IsPaid = isPaid
-	}
-	return bills, nil
+	return payment != nil, nil
 }
 
 // calculateNextDueDate determines the next due date for a bill based on recurrence_type and payment history
-func (s *BillService) calculateNextDueDate(bill *models.Bill) (*time.Time, *time.Time, error) {
+func (s *BillService) calculateNextDueDate(scopedDB *gorm.DB, bill *models.Bill) (*time.Time, *time.Time, error) {
 	// Non-recurring bills don't have a next due date
 	if bill.RecurrenceType == "none" {
 		// For one-time bills, use start_date as the due date if available
@@ -129,7 +174,7 @@ func (s *BillService) calculateNextDueDate(bill *models.Bill) (*time.Time, *time
 	}
 
 	// Get the most recent payment
-	latestPayment, err := s.paymentRepo.GetLatestByBillID(bill.ID)
+	latestPayment, err := s.paymentRepo.GetLatest(scopedDB, bill.ID)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -171,67 +216,29 @@ func (s *BillService) calculateNextDueDate(bill *models.Bill) (*time.Time, *time
 	return &nextDue, lastPaidPtr, nil
 }
 
-// calculateIsPaid determines if a bill is considered paid
-func (s *BillService) calculateIsPaid(bill *models.Bill) (bool, error) {
-	if bill.RecurrenceType != "none" {
-		// For recurring bills (fixed_date or interval): check if next due date is at least grace_days in the future
-		if bill.NextDueDate == nil {
-			return false, nil
-		}
-		graceDays := time.Duration(s.config.Bills.PaymentGraceDays) * 24 * time.Hour
-		return time.Until(*bill.NextDueDate) >= graceDays, nil
-	}
-
-	// For non-recurring bills: check if there's a payment record
-	payment, err := s.paymentRepo.GetLatestByBillID(bill.ID)
-	if err != nil {
-		return false, err
-	}
-	return payment != nil, nil
-}
-
-// UpdateBillByUser updates an existing bill and verifies ownership
-func (s *BillService) UpdateBillByUser(bill *models.Bill, userID string) error {
-	// Validate recurrence_days based on recurrence_type
-	if err := s.validateBillRecurrence(bill); err != nil {
-		return err
-	}
-	return s.repo.UpdateByUser(bill, userID)
-}
-
-// DeleteBillByUser deletes a bill and verifies ownership
-func (s *BillService) DeleteBillByUser(id string, userID string) error {
-	return s.repo.DeleteByUser(id, userID)
-}
-
-// GetStatsByUser retrieves bill statistics for a specific user
-func (s *BillService) GetStatsByUser(userID string) (*models.BillStats, error) {
-	stats, err := s.repo.GetStatsByUser(userID)
-	if err != nil {
-		return nil, err
-	}
-
-	// Get all bills for user to calculate paid/unpaid stats
-	bills, err := s.ListBillsByUser(userID)
-	if err != nil {
-		return nil, err
-	}
-
-	// Calculate paid/unpaid counts and due amount based on computed is_paid field
+// enrichWithPaymentStatus calculates the is_paid status and next_due_date for bills
+func (s *BillService) enrichWithPaymentStatus(scopedDB *gorm.DB, bills []*models.Bill) ([]*models.Bill, error) {
 	for _, bill := range bills {
-		if bill.IsPaid {
-			stats.PaidBills++
-		} else {
-			stats.UnpaidBills++
-			stats.DueAmount += bill.Amount
+		// Calculate next due date
+		nextDue, lastPaid, err := s.calculateNextDueDate(scopedDB, bill)
+		if err != nil {
+			return nil, err
 		}
-	}
+		bill.NextDueDate = nextDue
+		bill.LastPaidDate = lastPaid
 
-	return stats, nil
+		// Calculate is_paid status
+		isPaid, err := s.calculateIsPaid(scopedDB, bill)
+		if err != nil {
+			return nil, err
+		}
+		bill.IsPaid = isPaid
+	}
+	return bills, nil
 }
 
-// validateBillRecurrence validates the recurrence settings of a bill
-func (s *BillService) validateBillRecurrence(bill *models.Bill) error {
+// validateRecurrence validates the recurrence settings of a bill
+func (s *BillService) validateRecurrence(bill *models.Bill) error {
 	// Validate recurrence_type
 	if bill.RecurrenceType != "none" && bill.RecurrenceType != "fixed_date" && bill.RecurrenceType != "interval" {
 		return fmt.Errorf("invalid recurrence_type: must be 'none', 'fixed_date', or 'interval'")

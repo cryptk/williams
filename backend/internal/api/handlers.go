@@ -1,24 +1,52 @@
 package api
 
 import (
+	"errors"
 	"net/http"
 
 	"github.com/cryptk/williams/internal/models"
 	"github.com/cryptk/williams/pkg/utils"
 	"github.com/gin-gonic/gin"
 	"github.com/rs/zerolog/log"
+	"gorm.io/gorm"
 )
+
+// fetchTenancyFromContext fetches the user_id and scoped_db from the context with error checking.
+func fetchTenancyFromContext(c *gin.Context) (string, *gorm.DB, error) {
+	userIDRaw, ok := c.Get("user_id")
+	if !ok {
+		return "", nil, errors.New("user_id not found in context")
+	}
+	userID, ok := userIDRaw.(string)
+	if !ok {
+		return "", nil, errors.New("user_id in context is not a string")
+	}
+	scopedDBRaw, ok := c.Get("scoped_db")
+	if !ok {
+		return "", nil, errors.New("scoped_db not found in context")
+	}
+	scopedDB, ok := scopedDBRaw.(*gorm.DB)
+	if !ok {
+		return "", nil, errors.New("scoped_db in context is not a *gorm.DB")
+	}
+	return userID, scopedDB, nil
+}
 
 // Bill handlers
 
 func (s *Server) listBills(c *gin.Context) {
-	// Get authenticated user ID
-	userID, _ := c.Get("user_id")
-
-	bills, err := s.billService.ListBillsByUser(userID.(string))
+	// SECURITY: Always set user_id from JWT, never from request body
+	userID, scopedDB, err := fetchTenancyFromContext(c)
 	if err != nil {
-		log.Error().Err(err).Str("user_id", userID.(string)).Msg("Failed to list bills")
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		log.Error().Err(err).Msg("Failed to fetch tenancy from context")
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "unauthorized"})
+		return
+	}
+
+	bills, err := s.billService.List(scopedDB)
+	if err != nil {
+		log.Error().Err(err).Str("user_id", userID).Msg("Failed to list bills")
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to retrieve bills"})
 		return
 	}
 
@@ -30,11 +58,17 @@ func (s *Server) listBills(c *gin.Context) {
 
 func (s *Server) getBill(c *gin.Context) {
 	id := c.Param("id")
-	// Get authenticated user ID
-	userID, _ := c.Get("user_id")
-
-	bill, err := s.billService.GetBillByUser(id, userID.(string))
+	// SECURITY: Always set user_id from JWT, never from request body
+	userID, scopedDB, err := fetchTenancyFromContext(c)
 	if err != nil {
+		log.Error().Err(err).Str("user_id", userID).Msg("Failed to fetch tenancy from context")
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "unauthorized"})
+		return
+	}
+
+	bill, err := s.billService.Get(scopedDB, id)
+	if err != nil {
+		log.Error().Err(err).Str("user_id", userID).Str("bill_id", id).Msg("Failed to get bill")
 		c.JSON(http.StatusNotFound, gin.H{
 			"error": "Bill not found",
 			"id":    id,
@@ -46,8 +80,13 @@ func (s *Server) getBill(c *gin.Context) {
 }
 
 func (s *Server) createBill(c *gin.Context) {
-	// Get authenticated user ID
-	userID, _ := c.Get("user_id")
+	// SECURITY: Always set user_id from JWT, never from request body
+	userID, scopedDB, err := fetchTenancyFromContext(c)
+	if err != nil {
+		log.Error().Err(err).Str("user_id", userID).Msg("Failed to fetch tenancy from context")
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "unauthorized"})
+		return
+	}
 
 	var bill models.Bill
 	if err := c.ShouldBindJSON(&bill); err != nil {
@@ -56,16 +95,17 @@ func (s *Server) createBill(c *gin.Context) {
 	}
 
 	// Set the user ID for the bill
-	bill.UserID = userID.(string)
+
+	bill.UserID = userID
 
 	// If CategoryID is present but empty, set to nil so GORM inserts NULL
 	if bill.CategoryID != nil && *bill.CategoryID == "" {
 		bill.CategoryID = nil
 	}
 
-	if err := s.billService.CreateBill(&bill); err != nil {
-		log.Error().Err(err).Str("user_id", userID.(string)).Msg("Failed to create bill")
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+	if err := s.billService.Create(scopedDB, &bill); err != nil {
+		log.Error().Err(err).Str("user_id", userID).Msg("Failed to create bill")
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create bill"})
 		return
 	}
 
@@ -73,9 +113,14 @@ func (s *Server) createBill(c *gin.Context) {
 }
 
 func (s *Server) updateBill(c *gin.Context) {
+	// SECURITY: Always set user_id from JWT, never from request body
 	id := c.Param("id")
-	// Get authenticated user ID
-	userID, _ := c.Get("user_id")
+	userID, scopedDB, err := fetchTenancyFromContext(c)
+	if err != nil {
+		log.Error().Err(err).Str("user_id", userID).Msg("Failed to fetch tenancy from context")
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "unauthorized"})
+		return
+	}
 
 	var bill models.Bill
 	if err := c.ShouldBindJSON(&bill); err != nil {
@@ -85,11 +130,11 @@ func (s *Server) updateBill(c *gin.Context) {
 
 	// SECURITY: Always set user_id from JWT, never from request body
 	bill.ID = id
-	bill.UserID = userID.(string)
+	bill.UserID = userID
 
-	if err := s.billService.UpdateBillByUser(&bill, userID.(string)); err != nil {
-		log.Error().Err(err).Str("user_id", userID.(string)).Str("bill_id", id).Msg("Failed to update bill")
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+	if err := s.billService.Update(scopedDB, &bill); err != nil {
+		log.Error().Err(err).Str("user_id", userID).Str("bill_id", id).Msg("Failed to update bill")
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update bill"})
 		return
 	}
 
@@ -98,12 +143,16 @@ func (s *Server) updateBill(c *gin.Context) {
 
 func (s *Server) deleteBill(c *gin.Context) {
 	id := c.Param("id")
-	// Get authenticated user ID
-	userID, _ := c.Get("user_id")
+	userID, scopedDB, err := fetchTenancyFromContext(c)
+	if err != nil {
+		log.Error().Err(err).Str("user_id", userID).Msg("Failed to fetch tenancy from context")
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "unauthorized"})
+		return
+	}
 
-	if err := s.billService.DeleteBillByUser(id, userID.(string)); err != nil {
-		log.Error().Err(err).Str("user_id", userID.(string)).Str("bill_id", id).Msg("Failed to delete bill")
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+	if err := s.billService.Delete(scopedDB, id); err != nil {
+		log.Error().Err(err).Str("user_id", userID).Str("bill_id", id).Msg("Failed to delete bill")
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to delete bill"})
 		return
 	}
 
@@ -116,13 +165,17 @@ func (s *Server) deleteBill(c *gin.Context) {
 // Category handlers
 
 func (s *Server) listCategories(c *gin.Context) {
-	// Get authenticated user ID
-	userID, _ := c.Get("user_id")
-
-	categories, err := s.categoryService.ListCategoriesByUser(userID.(string))
+	userID, scopedDB, err := fetchTenancyFromContext(c)
 	if err != nil {
-		log.Error().Err(err).Str("user_id", userID.(string)).Msg("Failed to list categories")
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		log.Error().Err(err).Str("user_id", userID).Msg("Failed to fetch tenancy from context")
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "unauthorized"})
+		return
+	}
+
+	categories, err := s.categoryService.List(scopedDB)
+	if err != nil {
+		log.Error().Err(err).Str("user_id", userID).Msg("Failed to list categories")
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to retrieve categories"})
 		return
 	}
 
@@ -132,8 +185,12 @@ func (s *Server) listCategories(c *gin.Context) {
 }
 
 func (s *Server) createCategory(c *gin.Context) {
-	// Get authenticated user ID
-	userID, _ := c.Get("user_id")
+	userID, scopedDB, err := fetchTenancyFromContext(c)
+	if err != nil {
+		log.Error().Err(err).Str("user_id", userID).Msg("Failed to fetch tenancy from context")
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "unauthorized"})
+		return
+	}
 
 	var category models.Category
 	if err := c.ShouldBindJSON(&category); err != nil {
@@ -141,12 +198,11 @@ func (s *Server) createCategory(c *gin.Context) {
 		return
 	}
 
-	// SECURITY: Always set user_id from JWT, never from request body
-	category.UserID = userID.(string)
+	category.UserID = userID // Set user ID from authenticated context
 
-	if err := s.categoryService.CreateCategory(&category); err != nil {
-		log.Error().Err(err).Str("user_id", userID.(string)).Msg("Failed to create category")
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+	if err := s.categoryService.Create(scopedDB, &category); err != nil {
+		log.Error().Err(err).Str("user_id", userID).Msg("Failed to create category")
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create category"})
 		return
 	}
 
@@ -155,12 +211,16 @@ func (s *Server) createCategory(c *gin.Context) {
 
 func (s *Server) deleteCategory(c *gin.Context) {
 	id := c.Param("id")
-	// Get authenticated user ID
-	userID, _ := c.Get("user_id")
+	userID, scopedDB, err := fetchTenancyFromContext(c)
+	if err != nil {
+		log.Error().Err(err).Str("user_id", userID).Msg("Failed to fetch tenancy from context")
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "unauthorized"})
+		return
+	}
 
-	if err := s.categoryService.DeleteCategoryByUser(id, userID.(string)); err != nil {
-		log.Error().Err(err).Str("user_id", userID.(string)).Str("category_id", id).Msg("Failed to delete category")
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+	if err := s.categoryService.Delete(scopedDB, id); err != nil {
+		log.Error().Err(err).Str("user_id", userID).Str("category_id", id).Msg("Failed to delete category")
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to delete category"})
 		return
 	}
 
@@ -173,13 +233,17 @@ func (s *Server) deleteCategory(c *gin.Context) {
 // Statistics handlers
 
 func (s *Server) getStatsSummary(c *gin.Context) {
-	// Get authenticated user ID
-	userID, _ := c.Get("user_id")
-
-	stats, err := s.billService.GetStatsByUser(userID.(string))
+	userID, scopedDB, err := fetchTenancyFromContext(c)
 	if err != nil {
-		log.Error().Err(err).Str("user_id", userID.(string)).Msg("Failed to get stats")
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		log.Error().Err(err).Str("user_id", userID).Msg("Failed to fetch tenancy from context")
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "unauthorized"})
+		return
+	}
+
+	stats, err := s.billService.GetStats(scopedDB)
+	if err != nil {
+		log.Error().Err(err).Str("user_id", userID).Msg("Failed to get stats")
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch bill statistics"})
 		return
 	}
 
@@ -190,8 +254,12 @@ func (s *Server) getStatsSummary(c *gin.Context) {
 
 func (s *Server) createPayment(c *gin.Context) {
 	billID := c.Param("id")
-	// Get authenticated user ID
-	userID, _ := c.Get("user_id")
+	userID, scopedDB, err := fetchTenancyFromContext(c)
+	if err != nil {
+		log.Error().Err(err).Str("user_id", userID).Msg("Failed to fetch tenancy from context")
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "unauthorized"})
+		return
+	}
 
 	var payment models.Payment
 	if err := c.ShouldBindJSON(&payment); err != nil {
@@ -200,13 +268,14 @@ func (s *Server) createPayment(c *gin.Context) {
 	}
 
 	payment.BillID = billID
+	payment.UserID = userID // Set user ID from authenticated context
 
 	// Convert payment date to application timezone
 	payment.PaymentDate = utils.ConvertToAppTimezone(payment.PaymentDate)
 
-	if err := s.billService.CreatePaymentByUser(&payment, userID.(string)); err != nil {
-		log.Error().Err(err).Str("user_id", userID.(string)).Str("bill_id", billID).Msg("Failed to create payment")
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+	if err := s.billService.CreatePayment(scopedDB, &payment); err != nil {
+		log.Error().Err(err).Str("user_id", userID).Str("bill_id", billID).Msg("Failed to create payment")
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create payment"})
 		return
 	}
 
@@ -215,13 +284,17 @@ func (s *Server) createPayment(c *gin.Context) {
 
 func (s *Server) listPayments(c *gin.Context) {
 	billID := c.Param("id")
-	// Get authenticated user ID
-	userID, _ := c.Get("user_id")
-
-	payments, err := s.billService.GetPaymentsByBillAndUser(billID, userID.(string))
+	userID, scopedDB, err := fetchTenancyFromContext(c)
 	if err != nil {
-		log.Error().Err(err).Str("user_id", userID.(string)).Str("bill_id", billID).Msg("Failed to list payments")
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		log.Error().Err(err).Str("user_id", userID).Msg("Failed to fetch tenancy from context")
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "unauthorized"})
+		return
+	}
+
+	payments, err := s.billService.ListPayments(scopedDB, billID)
+	if err != nil {
+		log.Error().Err(err).Str("user_id", userID).Str("bill_id", billID).Msg("Failed to list payments")
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to retrieve payments"})
 		return
 	}
 
@@ -233,12 +306,16 @@ func (s *Server) listPayments(c *gin.Context) {
 
 func (s *Server) deletePayment(c *gin.Context) {
 	paymentID := c.Param("payment_id")
-	// Get authenticated user ID
-	userID, _ := c.Get("user_id")
+	userID, scopedDB, err := fetchTenancyFromContext(c)
+	if err != nil {
+		log.Error().Err(err).Str("user_id", userID).Msg("Failed to fetch tenancy from context")
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "unauthorized"})
+		return
+	}
 
-	if err := s.billService.DeletePaymentByUser(paymentID, userID.(string)); err != nil {
-		log.Error().Err(err).Str("user_id", userID.(string)).Str("payment_id", paymentID).Msg("Failed to delete payment")
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+	if err := s.billService.DeletePayment(scopedDB, paymentID); err != nil {
+		log.Error().Err(err).Str("user_id", userID).Str("payment_id", paymentID).Msg("Failed to delete payment")
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to delete payment"})
 		return
 	}
 
