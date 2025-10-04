@@ -270,12 +270,8 @@ func (s *Server) createPayment(c *gin.Context) {
 	payment.BillID = billID
 	payment.UserID = userID // Set user ID from authenticated context
 
-	log.Info().Time("payment_date", payment.PaymentDate).Msg("Creating payment with date")
-
 	// Convert payment date to application timezone
 	payment.PaymentDate = utils.ConvertToAppTimezone(payment.PaymentDate)
-
-	log.Info().Time("payment_date", payment.PaymentDate).Msg("Creating payment with date")
 
 	if err := s.billService.CreatePayment(scopedDB, &payment); err != nil {
 		log.Error().Err(err).Str("user_id", userID).Str("bill_id", billID).Msg("Failed to create payment")
