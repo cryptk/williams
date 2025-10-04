@@ -29,9 +29,11 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        platform:
-          - linux/amd64
-          - linux/arm64
+        include:
+          - platform: linux/amd64
+            platform_pair: linux-amd64
+          - platform: linux/arm64
+            platform_pair: linux-arm64
       # The matrix includes two platforms: linux/amd64 and linux/arm64.
       # The build job will run for each platform in the matrix.
 
@@ -151,11 +153,11 @@ jobs:
       - name: Upload digest
         # This step uploads the digest file to the GitHub Actions artifact storage.
         # It uses the actions/upload-artifact action to upload the file created in the previous step.
-        # The artifact is named digests-${{ env.PLATFORM_PAIR }}, where PLATFORM_PAIR is the platform name with '/' replaced by '-'.
+        # The artifact is named digests-${{ matrix.platform_pair }}, where platform_pair is the platform name with '/' replaced by '-'.
         # The artifact is retained for 1 day, and if no files are found, it will throw an error.      
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
-          name: digests-${{ env.PLATFORM_PAIR }}
+          name: digests-${{ matrix.platform_pair }}
           path: /tmp/digests/*
           if-no-files-found: error
           retention-days: 1
