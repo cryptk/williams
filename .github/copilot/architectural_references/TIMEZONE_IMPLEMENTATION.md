@@ -46,193 +46,60 @@ func InitTimezone(tzName string) error {
 }
 ```
 
-**Why global variable:**
-- Timezone doesn't change during runtime
-- Avoids passing through every function
-- Initialized once at startup
+**Why global:** Timezone doesn't change during runtime, avoids passing through every function, initialized once at startup.
 
 ### Date Calculations (`pkg/utils/date.go`)
 
-#### Getting Current Date in Application Timezone
-
+**Getting current date in app timezone:**
 ```go
 func TodayInLocation() time.Time {
     return time.Now().In(AppLocation).Truncate(24 * time.Hour)
 }
 ```
 
-**Why this pattern:**
-1. `time.Now()` - Current UTC time
-2. `.In(AppLocation)` - Convert to app timezone
-3. `.Truncate(24 * time.Hour)` - Midnight of that day
-
-**✅ Use this, not:**
-```go
-time.Now().Truncate(24 * time.Hour)  // Wrong! Uses local server time
-```
-
-#### Creating Dates for a Specific Month
-
+**Creating dates for specific month:**
 ```go
 func DateForMonthDay(year, month, day int) time.Time {
     return time.Date(year, time.Month(month), day, 0, 0, 0, 0, AppLocation)
 }
 ```
 
-**Why specify location:**
-- `time.Date()` needs a location
-- Using `AppLocation` ensures consistency
-- Creates midnight in the application timezone
-
-**Example:**
-```go
-// Bill due on January 15th
-dueDate := date.DateForMonthDay(2024, 1, 15)
-// Result: 2024-01-15 00:00:00 PST (if AppLocation is America/Los_Angeles)
-```
-
-#### Next Due Date for Recurring Bills
-
-**Current implementation** uses sophisticated date calculation logic to handle multiple 
-recurrence types (fixed_date, interval, none). The implementation is in `pkg/utils/date.go`:
-
-- `CalculateNextDueDate(dueDay int, referenceDate time.Time)` - For fixed-date recurring bills
-- `CalculateNextDueDateInterval(intervalDays int, referenceDate time.Time)` - For interval-based recurring bills
-- `CalculateNextDueDateAfterPayment(dueDay int, paymentDate time.Time)` - After payment for fixed-date
-- `CalculateNextDueDateAfterPaymentInterval(intervalDays int, paymentDate time.Time)` - After payment for interval
-
-**See `BILL_RECURRENCE.md`** for complete details on the recurrence system including:
-- How each recurrence type works
+**Next due date for recurring bills:**
+See `BILL_RECURRENCE.md` for complete details on:
+- `CalculateNextDueDate` / `CalculateNextDueDateInterval`
+- `CalculateNextDueDateAfterPayment` / `CalculateNextDueDateAfterPaymentInterval`
 - Edge case handling (months with fewer days)
-- Payment date calculations
-- Code examples and best practices
-
-**Why this logic:**
-- Bill due on 15th, today is 10th → due in 5 days (this month)
-- Bill due on 15th, today is 20th → due next month
-- Always returns midnight in the application timezone
-
-**Edge case handling:**
-```go
-// Bill due on 31st, but next month is February
-nextMonth := thisMonth.AddDate(0, 1, 0)
-// Go automatically normalizes: Feb 31 → Mar 3
-// This is correct behavior - bill rolls to first valid day
-```
 
 ## Usage in Service Layer
 
-### Bill Service (`internal/services/bill_service.go`)
+Bill service calculates next due dates and paid status using timezone-aware functions from `pkg/utils/date.go`. Services contain business logic; repositories just fetch data.
 
-```go
-func (s *BillService) enrichBillsWithPaymentStatus(bills []*models.Bill) ([]*models.Bill, error) {
-    for _, bill := range bills {
-        // Calculate next due date based on recurrence type
-        nextDue, lastPaid, err := s.calculateNextDueDate(bill)
-        if err != nil {
-            return nil, err
-        }
-        bill.NextDueDate = nextDue
-        bill.LastPaidDate = lastPaid
-
-        // Calculate is_paid status
-        isPaid, err := s.calculateIsPaid(bill)
-        if err != nil {
-            return nil, err
-        }
-        bill.IsPaid = isPaid
-    }
-    return bills, nil
-}
-```
-
-**Why in service layer:**
-- Services contain business logic
-- Repositories just fetch data
-- Handlers format for HTTP response
-
-### Payment Service
-
-```go
-func (s *BillService) CreatePayment(payment *models.Payment) error {
-    // Ensure payment date is in application timezone
-    payment.PaymentDate = payment.PaymentDate.In(utils.AppLocation)
-    
-    return s.paymentRepo.CreatePayment(payment)
-}
-```
-
-**Why convert timezone:**
-- User might submit payment from different timezone
-- Need consistent date for "is paid" checks
-- Database stores UTC, but we want local date semantics
+Payment service ensures dates are in application timezone before storage.
 
 ## Grace Period Logic
 
-From `config.yaml`:
-```yaml
-bills:
-  payment_grace_days: 3
-```
+Configuration: `payment_grace_days: 3` in config.yaml
 
-**Implementation:**
-```go
-func (s *BillService) IsBillPaidForCycle(billID string, dueDate time.Time) bool {
-    graceDate := dueDate.AddDate(0, 0, s.cfg.Bills.PaymentGraceDays)
-    
-    payments := s.paymentRepo.GetPaymentsByBill(billID)
-    for _, payment := range payments {
-        paymentDate := payment.PaymentDate.In(utils.AppLocation).Truncate(24 * time.Hour)
-        
-        // Paid within grace period?
-        if paymentDate.After(dueDate.AddDate(0, -1, 0)) && paymentDate.Before(graceDate) {
-            return true
-        }
-    }
-    return false
-}
-```
-
-**Why grace period:**
-- Bill due 15th, paid 17th → still counts as "paid on time"
-- Configurable per deployment
-- Users see consistent "paid" status
+Bill is considered paid if next due date is at least grace_days in the future. Prevents showing as unpaid immediately before due date.
 
 ## Database Storage
 
-**Rule:** Database stores UTC timestamps
+**Rule:** Database stores UTC timestamps. GORM handles conversion automatically.
 
-```go
-type Payment struct {
-    ID          string    `gorm:"primaryKey"`
-    PaymentDate time.Time `gorm:"type:datetime"`  // Stored as UTC
-    CreatedAt   time.Time
-}
-```
-
-**Why UTC in database:**
-- Standard practice
-- No daylight saving time confusion
-- Can query across timezones
-- Convert to app timezone when needed
-
-**GORM handles conversion automatically:**
 ```go
 payment.PaymentDate = time.Date(2024, 1, 15, 0, 0, 0, 0, utils.AppLocation)
-db.Create(&payment)
-// Stored as: 2024-01-15 08:00:00 UTC (if PST is -8 hours)
+db.Create(&payment)  // Stored as UTC
 
 var loaded Payment
-db.First(&loaded)
-// loaded.PaymentDate is still 2024-01-15 08:00:00 UTC
-// Convert: loaded.PaymentDate.In(utils.AppLocation) → 2024-01-15 00:00:00 PST
+db.First(&loaded)  // Still UTC
+loaded.PaymentDate.In(utils.AppLocation)  // Convert to app timezone
 ```
 
 ## Common Pitfalls
 
 ### ❌ Using time.Now() directly
 ```go
-today := time.Now().Truncate(24 * time.Hour)  // Uses server's local time!
+today := time.Now().Truncate(24 * time.Hour)  // Uses server local time!
 ```
 
 **✅ Correct:**
@@ -252,7 +119,7 @@ dueDate := date.DateForMonthDay(2024, 1, 15)  // Application timezone
 
 ### ❌ Comparing dates in different timezones
 ```go
-if payment.PaymentDate.Before(dueDate) {  // Might be in different timezones!
+if payment.PaymentDate.Before(dueDate) {  // Might be different timezones!
 ```
 
 **✅ Correct:**
@@ -261,66 +128,6 @@ paymentDate := payment.PaymentDate.In(utils.AppLocation).Truncate(24 * time.Hour
 if paymentDate.Before(dueDate) {
 ```
 
-### ❌ Hardcoding timezone
-```go
-loc, _ := time.LoadLocation("America/Los_Angeles")  // Wrong!
-```
-
-**✅ Correct:**
-```go
-// Use the configured global
-nextDue := date.NextDueDateFromDay(15, utils.AppLocation)
-```
-
-## Testing
-
-**Why this matters for tests:**
-
-```go
-func TestNextDueDate(t *testing.T) {
-    // Set test timezone
-    utils.AppLocation, _ = time.LoadLocation("America/Los_Angeles")
-    
-    // Create test date in that timezone
-    testDate := date.DateForMonthDay(2024, 1, 10)
-    
-    // Test uses consistent timezone
-    nextDue := date.NextDueDateFromDay(15, utils.AppLocation)
-    assert.True(t, nextDue.After(testDate))
-}
-```
-
-**Testing different timezones:**
-```go
-func TestNextDueDate_Tokyo(t *testing.T) {
-    utils.AppLocation, _ = time.LoadLocation("Asia/Tokyo")
-    // Test still works - uses configured timezone
-}
-```
-
-## Multi-Timezone Support (Future)
-
-**Current architecture supports per-user timezones:**
-
-```go
-type User struct {
-    Timezone string  // Add this field
-}
-
-func (s *BillService) GetBillsWithStatus(userID string) ([]*models.Bill, error) {
-    user := s.userRepo.GetUser(userID)
-    userLocation, _ := time.LoadLocation(user.Timezone)
-    
-    today := time.Now().In(userLocation).Truncate(24 * time.Hour)
-    // Rest of logic uses userLocation instead of utils.AppLocation
-}
-```
-
-**Not implemented because:**
-- Adds complexity
-- Single-user app doesn't need it
-- Can add later without breaking changes
-
 ## Summary
 
 **Key principles:**
@@ -328,6 +135,4 @@ func (s *BillService) GetBillsWithStatus(userID string) ([]*models.Bill, error) 
 2. Always use `utils.AppLocation` for date math
 3. Store UTC in database, convert on read
 4. Use `pkg/utils/date.go` functions, not raw `time` package
-5. Test with explicit timezone to ensure consistency
-
-**The timezone is set once at startup and never changes during runtime.**
+5. Test with explicit timezone for consistency

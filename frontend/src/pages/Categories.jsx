@@ -5,7 +5,6 @@ import ConfirmationModal from "../components/ConfirmationModal";
 import EmptyState from "../components/EmptyState";
 import CategoryFormModal from "../components/CategoryFormModal";
 import { toast } from "../components/Toast";
-import "./Categories.css";
 
 export function Categories() {
   // useToast removed, use react-toastify's toast directly
@@ -163,8 +162,8 @@ export function Categories() {
 
   return (
     <div class="categories">
-      <div class="page-header">
-        <h2>Categories</h2>
+      <div class="flex justify-between items-center mb-8">
+        <h2 class="text-2xl font-bold text-text-primary m-0">Categories</h2>
         <button class="btn btn-primary" onClick={() => setShowModal(true)}>
           Add Category
         </button>

@@ -1,4 +1,3 @@
-import "./style.css";
 import ConfirmationModal from "../ConfirmationModal";
 
 export default function PaymentActionsModal({
@@ -18,19 +17,19 @@ export default function PaymentActionsModal({
       onCancel={onCancel}
       hideActions={true}
     >
-      <p>
+      <p class="mb-6">
         What would you like to do for <strong>{billName}</strong>?
       </p>
-      <div class="payment-actions-buttons">
+      <div class="flex flex-col gap-3">
         <button
-          class="btn btn-primary"
+          class="btn btn-primary w-full"
           onClick={onRecordNextPayment}
           disabled={submitting || deleting}
         >
           {submitting ? "Recording..." : "Record Next Payment"}
         </button>
         <button
-          class="btn btn-danger"
+          class="btn btn-danger w-full"
           onClick={onDeleteLastPayment}
           disabled={submitting || deleting}
         >

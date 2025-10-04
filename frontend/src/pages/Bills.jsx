@@ -17,7 +17,6 @@ import EmptyState from "../components/EmptyState";
 import BillFormModal from "../components/BillFormModal";
 import PaymentActionsModal from "../components/PaymentActionsModal";
 import { toast } from "../components/Toast";
-import "./Bills.css";
 
 export function Bills() {
   const [bills, setBills] = useState([]);
@@ -299,8 +298,8 @@ export function Bills() {
 
   return (
     <div class="bills">
-      <div class="page-header">
-        <h2>Bills</h2>
+      <div class="flex justify-between items-center mb-8">
+        <h2 class="text-2xl font-bold text-text-primary m-0">Bills</h2>
         <button class="btn btn-primary" onClick={() => setShowModal(true)}>
           Add Bill
         </button>
