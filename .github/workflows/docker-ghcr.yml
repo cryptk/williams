@@ -128,6 +128,8 @@ jobs:
           DOCKER_BUILDKIT: 1
         with:
           context: .
+          build-args: |
+            VERSION=${{ steps.meta.outputs.version }}
           platforms: ${{ matrix.platform }}
           labels: ${{ steps.meta.outputs.labels }}
           annotations: ${{ steps.meta.outputs.annotations }}
