@@ -140,6 +140,14 @@ Architectural references document **HOW the project IS designed** and **WHY it i
 - Put "how to use" guides in `docs/`
 - Put "why/how it was built" architectural details in `.github/copilot/architectural_references/`
 
+**Creating Documentation:**
+- ❌ Don't create summary markdown files when completing tasks (e.g., MIGRATION_SUMMARY.md, CHANGES_MADE.md)
+- ❌ Don't create documentation without asking first
+- ✅ If you believe an architectural reference would be valuable, ask the user before creating it
+- ✅ Focus on code changes and functionality, not documenting the work itself
+
+## Code Style
+
 ## Configuration Management
 
 ### Environment Variables
