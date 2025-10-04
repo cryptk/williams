@@ -96,7 +96,7 @@ func (r *billRepository) GetStats(scopedDB *gorm.DB) (*models.BillStats, error) 
 
 	// Total bills count
 	var totalCount int64
-	if err := scopedDB.Model(&models.Bill{}).Count(&totalCount).Error; err != nil {
+	if err := scopedDB.Session(&gorm.Session{}).Model(&models.Bill{}).Count(&totalCount).Error; err != nil {
 		return nil, err
 	}
 	stats.TotalBills = int(totalCount)
