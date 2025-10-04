@@ -1,4 +1,5 @@
 import { Link } from "preact-router/match";
+import "./style.css";
 
 export function Header({ user, onLogout }) {
   return (

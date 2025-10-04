@@ -1,5 +1,8 @@
 import { useState, useEffect } from "preact/hooks";
+
 import { getStats } from "../services/api";
+import StatCard from "../components/StatCard";
+import "./Dashboard.css";
 
 export function Dashboard() {
   const [stats, setStats] = useState(null);
@@ -28,26 +31,18 @@ export function Dashboard() {
     <div class="dashboard">
       <h2>Dashboard</h2>
       <div class="stats-grid">
-        <div class="stat-card">
-          <h3>Total Bills</h3>
-          <p class="stat-value">{stats?.total_bills || 0}</p>
-        </div>
-        <div class="stat-card">
-          <h3>Total Amount</h3>
-          <p class="stat-value">${stats?.total_amount?.toFixed(2) || "0.00"}</p>
-        </div>
-        <div class={`stat-card ${stats?.due_amount > 0 ? "highlight" : ""}`}>
-          <h3>Amount Due</h3>
-          <p class="stat-value">${stats?.due_amount?.toFixed(2) || "0.00"}</p>
-        </div>
-        <div class="stat-card">
-          <h3>Paid Bills</h3>
-          <p class="stat-value">{stats?.paid_bills || 0}</p>
-        </div>
-        <div class="stat-card">
-          <h3>Unpaid Bills</h3>
-          <p class="stat-value">{stats?.unpaid_bills || 0}</p>
-        </div>
+        <StatCard title="Total Bills" value={stats?.total_bills || 0} />
+        <StatCard
+          title="Total Amount"
+          value={`$${stats?.total_amount?.toFixed(2) || "0.00"}`}
+        />
+        <StatCard
+          title="Amount Due"
+          value={`$${stats?.due_amount?.toFixed(2) || "0.00"}`}
+          highlight={stats?.due_amount > 0}
+        />
+        <StatCard title="Paid Bills" value={stats?.paid_bills || 0} />
+        <StatCard title="Unpaid Bills" value={stats?.unpaid_bills || 0} />
       </div>
     </div>
   );

@@ -6,8 +6,13 @@ import {
   createPayment,
   deletePayment,
 } from "../services/api";
-import { getBillStatus, getDaySuffix } from "../utils/helpers";
+import { getBillStatus, getDaySuffix, dateInputToISO } from "../utils/helpers";
+import ConfirmationModal from "../components/ConfirmationModal";
+import EmptyState from "../components/EmptyState";
+import PaymentFormModal from "../components/PaymentFormModal";
+import PaymentsTable from "../components/PaymentsTable";
 import { toast } from "../components/Toast";
+import "./BillDetails.css";
 
 export function BillDetails({ id }) {
   // useToast removed, use react-toastify's toast directly
@@ -59,13 +64,13 @@ export function BillDetails({ id }) {
   };
 
   const handleAddPayment = () => {
-    // Pre-fill with bill amount and today's date
-    const today = new Date();
-    const todayStr = today.toISOString().split("T")[0]; // YYYY-MM-DD format
+    // Pre-fill with bill amount and next due date
+    const nextDueDate = bill?.next_due_date ? new Date(bill.next_due_date) : new Date();
+    const dateStr = nextDueDate.toISOString().split("T")[0]; // YYYY-MM-DD format
 
     setPaymentFormData({
       amount: bill ? bill.amount.toString() : "",
-      payment_date: todayStr,
+      payment_date: dateStr,
       notes: "",
     });
     setShowPaymentModal(true);
@@ -85,7 +90,7 @@ export function BillDetails({ id }) {
 
       const paymentData = {
         amount: parseFloat(paymentFormData.amount),
-        payment_date: new Date(paymentFormData.payment_date).toISOString(),
+        payment_date: dateInputToISO(paymentFormData.payment_date),
         notes: paymentFormData.notes,
       };
 
@@ -305,176 +310,44 @@ export function BillDetails({ id }) {
         </div>
 
         {payments.length === 0 ? (
-          <div class="empty-state">
-            <p>No payments recorded for this bill yet.</p>
-          </div>
+          <EmptyState message="No payments recorded for this bill yet." />
         ) : (
-          <div class="payments-table-container">
-            <table class="payments-table">
-              <thead>
-                <tr>
-                  <th>Payment Date</th>
-                  <th>Amount</th>
-                  <th>Notes</th>
-                  <th>Recorded On</th>
-                  <th>Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {payments.map((payment) => (
-                  <tr key={payment.id}>
-                    <td>{formatDate(payment.payment_date)}</td>
-                    <td class="amount-cell">${payment.amount.toFixed(2)}</td>
-                    <td class="notes-cell">{payment.notes || "-"}</td>
-                    <td>{formatDateTime(payment.created_at)}</td>
-                    <td>
-                      <button
-                        class="action-btn delete-btn"
-                        onClick={() => handleDeletePayment(payment)}
-                        title="Delete payment"
-                      >
-                        🗑️
-                      </button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
-
-        {payments.length > 0 && (
-          <div class="payments-summary">
-            <div class="summary-item">
-              <strong>Total Payments: </strong>$
-              {payments.reduce((sum, p) => sum + p.amount, 0).toFixed(2)}
-            </div>
-            <div class="summary-item">
-              <strong>Number of Payments: </strong>
-              {payments.length}
-            </div>
-          </div>
+          <PaymentsTable
+            payments={payments}
+            formatDate={formatDate}
+            formatDateTime={formatDateTime}
+            onDeletePayment={handleDeletePayment}
+          />
         )}
       </div>
 
       {/* Add Payment Modal */}
-      {showPaymentModal && (
-        <div class="modal-overlay" onClick={handlePaymentCancel}>
-          <div class="modal" onClick={(e) => e.stopPropagation()}>
-            <div class="modal-header">
-              <h3>Add Payment</h3>
-              <button class="close-btn" onClick={handlePaymentCancel}>
-                &times;
-              </button>
-            </div>
-
-            <form onSubmit={handlePaymentSubmit}>
-              <div class="form-group">
-                <label for="payment-amount">Amount *</label>
-                <input
-                  type="number"
-                  id="payment-amount"
-                  name="amount"
-                  value={paymentFormData.amount}
-                  onChange={handlePaymentInputChange}
-                  required
-                  min="0"
-                  step="0.01"
-                  placeholder="0.00"
-                />
-              </div>
-
-              <div class="form-group">
-                <label for="payment-date">Payment Date *</label>
-                <input
-                  type="date"
-                  id="payment-date"
-                  name="payment_date"
-                  value={paymentFormData.payment_date}
-                  onChange={handlePaymentInputChange}
-                  required
-                />
-              </div>
-
-              <div class="form-group">
-                <label for="payment-notes">Notes</label>
-                <textarea
-                  id="payment-notes"
-                  name="notes"
-                  value={paymentFormData.notes}
-                  onChange={handlePaymentInputChange}
-                  rows="3"
-                  placeholder="Add any notes about this payment..."
-                />
-              </div>
-
-              {error && <div class="error-message">{error}</div>}
-
-              <div class="modal-actions">
-                <button
-                  type="button"
-                  class="btn btn-secondary"
-                  onClick={handlePaymentCancel}
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  class="btn btn-primary"
-                  disabled={submitting}
-                >
-                  {submitting ? "Adding..." : "Add Payment"}
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
+      <PaymentFormModal
+        isOpen={showPaymentModal}
+        formData={paymentFormData}
+        error={error}
+        submitting={submitting}
+        onSubmit={handlePaymentSubmit}
+        onCancel={handlePaymentCancel}
+        onInputChange={handlePaymentInputChange}
+      />
 
       {/* Delete Payment Confirmation Modal */}
       {showDeleteConfirm && paymentToDelete && (
-        <div class="modal-overlay" onClick={handleDeleteCancel}>
-          <div
-            class="modal modal-small confirm-modal"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div class="modal-header">
-              <h3>Delete Payment</h3>
-              <button class="close-btn" onClick={handleDeleteCancel}>
-                &times;
-              </button>
-            </div>
-
-            <div class="confirm-content">
-              <p>Are you sure you want to delete this payment?</p>
-              <div class="payment-details">
-                <strong>Amount:</strong> ${paymentToDelete.amount.toFixed(2)}
-                <br />
-                <strong>Date:</strong>{" "}
-                {formatDate(paymentToDelete.payment_date)}
-              </div>
-              <p class="warning-text">This action cannot be undone.</p>
-            </div>
-
-            <div class="modal-actions">
-              <button
-                type="button"
-                class="btn btn-secondary"
-                onClick={handleDeleteCancel}
-              >
-                Cancel
-              </button>
-              <button
-                type="button"
-                class="btn btn-danger"
-                onClick={handleDeleteConfirm}
-                disabled={deleting}
-              >
-                {deleting ? "Deleting..." : "Delete"}
-              </button>
-            </div>
+        <ConfirmationModal
+          title="Delete Payment"
+          onConfirm={handleDeleteConfirm}
+          onCancel={handleDeleteCancel}
+          isDeleting={deleting}
+        >
+          <p>Are you sure you want to delete this payment?</p>
+          <div class="payment-details">
+            <strong>Amount:</strong> ${paymentToDelete.amount.toFixed(2)}
+            <br />
+            <strong>Date:</strong> {formatDate(paymentToDelete.payment_date)}
           </div>
-        </div>
+          <p class="warning-text">This action cannot be undone.</p>
+        </ConfirmationModal>
       )}
     </div>
   );

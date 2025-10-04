@@ -1,0 +1,10 @@
+/* Dashboard Page Styles */
+.dashboard h2 {
+  margin-bottom: 2rem;
+}
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 1.5rem;
+}

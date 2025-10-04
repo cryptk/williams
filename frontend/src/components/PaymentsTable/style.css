@@ -1,0 +1,100 @@
+/* Payments Table */
+.payments-table-container {
+  overflow-x: auto;
+  margin-bottom: 1.5rem;
+}
+
+.payments-table {
+  width: 100%;
+  border-collapse: collapse;
+  background: var(--card-bg);
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.payments-table th {
+  background: var(--bg-color);
+  padding: 1rem;
+  text-align: left;
+  font-weight: 600;
+  color: var(--text-color);
+  border-bottom: 2px solid var(--border-color);
+  font-size: 0.9rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.payments-table td {
+  padding: 1rem;
+  border-bottom: 1px solid var(--border-color);
+  color: var(--text-color);
+}
+
+.payments-table tr:last-child td {
+  border-bottom: none;
+}
+
+.payments-table tr:hover {
+  background: rgba(74, 144, 226, 0.05);
+}
+
+.amount-cell {
+  font-weight: 600;
+  color: var(--primary-color);
+}
+
+.notes-cell {
+  color: #666;
+  font-style: italic;
+  max-width: 200px;
+  word-wrap: break-word;
+}
+
+.notes-cell:empty::after {
+  content: "-";
+}
+
+/* Action buttons in table */
+.payments-table .action-btn {
+  background: rgba(231, 76, 60, 0.1);
+  border-radius: 4px;
+  padding: 0.25rem 0.5rem;
+}
+
+.payments-table .action-btn:hover {
+  background: var(--danger-color);
+  color: white;
+}
+
+/* Payments Summary */
+.payments-summary {
+  background: var(--bg-color);
+  padding: 1.5rem;
+  border-radius: 8px;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1rem;
+}
+
+.summary-item {
+  font-size: 1rem;
+  color: var(--text-color);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .payments-table-container {
+    border-radius: 8px;
+    font-size: 0.85rem;
+  }
+
+  .payments-table th,
+  .payments-table td {
+    padding: 0.75rem 0.5rem;
+  }
+
+  .payments-summary {
+    grid-template-columns: 1fr;
+  }
+}

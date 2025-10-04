@@ -16,7 +16,7 @@ func CalculateNextDueDate(dueDay int, referenceDate time.Time) time.Time {
 	refDay := referenceDate.Day()
 
 	// Try the current month first
-	nextDue := time.Date(year, month, dueDay, 0, 0, 0, 0, GetAppLocation())
+	nextDue := time.Date(year, month, dueDay, 12, 0, 0, 0, GetAppLocation())
 
 	// If the due day for this month has already passed, move to next month
 	if dueDay < refDay {
@@ -26,7 +26,7 @@ func CalculateNextDueDate(dueDay int, referenceDate time.Time) time.Time {
 			month = 1
 			year++
 		}
-		nextDue = time.Date(year, month, dueDay, 0, 0, 0, 0, GetAppLocation())
+		nextDue = time.Date(year, month, dueDay, 12, 0, 0, 0, GetAppLocation())
 	}
 
 	// Handle case where due_day doesn't exist in the month (e.g., Feb 30)
@@ -34,7 +34,7 @@ func CalculateNextDueDate(dueDay int, referenceDate time.Time) time.Time {
 	if nextDue.Day() != dueDay {
 		// The date was adjusted because the day doesn't exist in this month
 		// Use the last day of the previous month instead
-		nextDue = time.Date(year, month, 1, 0, 0, 0, 0, GetAppLocation()).AddDate(0, 0, -1)
+		nextDue = time.Date(year, month, 1, 12, 0, 0, 0, GetAppLocation()).AddDate(0, 0, -1)
 	}
 
 	return nextDue
@@ -50,7 +50,7 @@ func CalculateNextDueDateAfterPayment(dueDay int, paymentDate time.Time) time.Ti
 	nextMonth := paymentDate.AddDate(0, 1, 0)
 
 	// Create the next due date with the specified day
-	nextDue := time.Date(nextMonth.Year(), nextMonth.Month(), dueDay, 0, 0, 0, 0, GetAppLocation())
+	nextDue := time.Date(nextMonth.Year(), nextMonth.Month(), dueDay, 12, 0, 0, 0, GetAppLocation())
 
 	// Check if we rolled forward 2+ months instead of 1
 	// This happens when the due day doesn't exist in the next month (e.g., due day 31 in February)
@@ -62,7 +62,7 @@ func CalculateNextDueDateAfterPayment(dueDay int, paymentDate time.Time) time.Ti
 	if monthDiff > 1 {
 		// We rolled too far forward, use the last day of the next month instead
 		// Get the first day of the next month, then go back one day
-		nextDue = time.Date(nextMonth.Year(), nextMonth.Month()+1, 1, 0, 0, 0, 0, GetAppLocation()).AddDate(0, 0, -1)
+		nextDue = time.Date(nextMonth.Year(), nextMonth.Month()+1, 1, 12, 0, 0, 0, GetAppLocation()).AddDate(0, 0, -1)
 	}
 
 	return nextDue
@@ -77,8 +77,8 @@ func CalculateNextDueDateInterval(intervalDays int, referenceDate time.Time) tim
 	referenceDate = ConvertToAppTimezone(referenceDate)
 
 	// For interval bills, simply add the interval to the reference date
-	// Normalize to midnight for consistency
-	nextDue := time.Date(referenceDate.Year(), referenceDate.Month(), referenceDate.Day(), 0, 0, 0, 0, GetAppLocation())
+	// Normalize to noon for consistency
+	nextDue := time.Date(referenceDate.Year(), referenceDate.Month(), referenceDate.Day(), 12, 0, 0, 0, GetAppLocation())
 	nextDue = nextDue.AddDate(0, 0, intervalDays)
 
 	return nextDue
@@ -91,8 +91,8 @@ func CalculateNextDueDateAfterPaymentInterval(intervalDays int, paymentDate time
 	paymentDate = ConvertToAppTimezone(paymentDate)
 
 	// For interval bills, add the interval to the payment date
-	// Normalize to midnight for consistency
-	nextDue := time.Date(paymentDate.Year(), paymentDate.Month(), paymentDate.Day(), 0, 0, 0, 0, GetAppLocation())
+	// Normalize to noon for consistency
+	nextDue := time.Date(paymentDate.Year(), paymentDate.Month(), paymentDate.Day(), 12, 0, 0, 0, GetAppLocation())
 	nextDue = nextDue.AddDate(0, 0, intervalDays)
 
 	return nextDue

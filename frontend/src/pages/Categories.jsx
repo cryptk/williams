@@ -1,6 +1,11 @@
 import { useState, useEffect } from "preact/hooks";
 import { getCategories, createCategory, deleteCategory } from "../services/api";
+import CategoryCard from "../components/CategoryCard";
+import ConfirmationModal from "../components/ConfirmationModal";
+import EmptyState from "../components/EmptyState";
+import CategoryFormModal from "../components/CategoryFormModal";
 import { toast } from "../components/Toast";
+import "./Categories.css";
 
 export function Categories() {
   // useToast removed, use react-toastify's toast directly
@@ -166,162 +171,42 @@ export function Categories() {
       </div>
 
       {categories.length === 0 ? (
-        <div class="empty-state">
-          <p>
-            No categories yet. Add your first category to organize your bills!
-          </p>
-        </div>
+        <EmptyState message="No categories yet. Add your first category to organize your bills!" />
       ) : (
         <div class="categories-grid">
           {categories.map((category) => (
-            <div
+            <CategoryCard
               key={category.id}
-              class="category-card"
-              style={{ borderTop: `4px solid ${category.color || "#4a90e2"}` }}
-            >
-              <button
-                class="category-delete-btn"
-                onClick={() => handleDeleteClick(category)}
-                title="Delete category"
-              >
-                ×
-              </button>
-              <div
-                class="category-color"
-                style={{ backgroundColor: category.color || "#4a90e2" }}
-              ></div>
-              <h3>{category.name}</h3>
-              <p class="category-date">
-                Created {new Date(category.created_at).toLocaleDateString()}
-              </p>
-            </div>
+              category={category}
+              onDelete={handleDeleteClick}
+            />
           ))}
         </div>
       )}
 
       {/* Add Category Modal */}
-      {showModal && (
-        <div class="modal-overlay" onClick={handleCancel}>
-          <div class="modal modal-small" onClick={(e) => e.stopPropagation()}>
-            <div class="modal-header">
-              <h3>Add New Category</h3>
-              <button class="close-btn" onClick={handleCancel}>
-                &times;
-              </button>
-            </div>
-
-            <form onSubmit={handleSubmit}>
-              <div class="form-group">
-                <label for="name">Category Name *</label>
-                <input
-                  type="text"
-                  id="name"
-                  name="name"
-                  value={formData.name}
-                  onChange={handleInputChange}
-                  required
-                  placeholder="e.g., Utilities, Entertainment"
-                  maxLength="50"
-                />
-              </div>
-
-              <div class="form-group">
-                <label>Color</label>
-                <div class="color-palette">
-                  {colorPalette.map((color) => (
-                    <button
-                      type="button"
-                      key={color}
-                      class={`color-option ${
-                        formData.color === color ? "selected" : ""
-                      }`}
-                      style={{ backgroundColor: color }}
-                      onClick={() => handleColorSelect(color)}
-                      title={color}
-                    >
-                      {formData.color === color && (
-                        <span class="checkmark">✓</span>
-                      )}
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              <div class="form-group">
-                <label for="custom-color">Or choose custom color</label>
-                <input
-                  type="color"
-                  id="custom-color"
-                  name="color"
-                  value={formData.color}
-                  onChange={handleInputChange}
-                />
-              </div>
-
-              {error && <div class="error-message">{error}</div>}
-
-              <div class="modal-actions">
-                <button
-                  type="button"
-                  class="btn btn-secondary"
-                  onClick={handleCancel}
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  class="btn btn-primary"
-                  disabled={submitting}
-                >
-                  {submitting ? "Adding..." : "Add Category"}
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
+      <CategoryFormModal
+        isOpen={showModal}
+        formData={formData}
+        error={error}
+        submitting={submitting}
+        colorPalette={colorPalette}
+        onSubmit={handleSubmit}
+        onCancel={handleCancel}
+        onInputChange={handleInputChange}
+        onColorSelect={handleColorSelect}
+      />
 
       {/* Delete Confirmation Modal */}
       {showDeleteConfirm && categoryToDelete && (
-        <div class="modal-overlay" onClick={handleDeleteCancel}>
-          <div
-            class="modal modal-small confirm-modal"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div class="modal-header">
-              <h3>Delete Category</h3>
-              <button class="close-btn" onClick={handleDeleteCancel}>
-                &times;
-              </button>
-            </div>
-
-            <div class="confirm-content">
-              <p>
-                Are you sure you want to delete the category{" "}
-                <strong>{categoryToDelete.name}</strong>?
-              </p>
-              <p class="warning-text">This action cannot be undone.</p>
-            </div>
-
-            <div class="modal-actions">
-              <button
-                type="button"
-                class="btn btn-secondary"
-                onClick={handleDeleteCancel}
-              >
-                Cancel
-              </button>
-              <button
-                type="button"
-                class="btn btn-danger"
-                onClick={handleDeleteConfirm}
-                disabled={deleting}
-              >
-                {deleting ? "Deleting..." : "Delete"}
-              </button>
-            </div>
-          </div>
-        </div>
+        <ConfirmationModal
+          title="Delete Category"
+          message="Are you sure you want to delete the category"
+          itemName={categoryToDelete.name}
+          onConfirm={handleDeleteConfirm}
+          onCancel={handleDeleteCancel}
+          isDeleting={deleting}
+        />
       )}
     </div>
   );
