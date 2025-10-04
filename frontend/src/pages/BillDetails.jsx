@@ -12,7 +12,6 @@ import EmptyState from "../components/EmptyState";
 import PaymentFormModal from "../components/PaymentFormModal";
 import PaymentsTable from "../components/PaymentsTable";
 import { toast } from "../components/Toast";
-import "./BillDetails.css";
 
 export function BillDetails({ id }) {
   // useToast removed, use react-toastify's toast directly
@@ -65,7 +64,9 @@ export function BillDetails({ id }) {
 
   const handleAddPayment = () => {
     // Pre-fill with bill amount and next due date
-    const nextDueDate = bill?.next_due_date ? new Date(bill.next_due_date) : new Date();
+    const nextDueDate = bill?.next_due_date
+      ? new Date(bill.next_due_date)
+      : new Date();
     const dateStr = nextDueDate.toISOString().split("T")[0]; // YYYY-MM-DD format
 
     setPaymentFormData({
@@ -195,38 +196,58 @@ export function BillDetails({ id }) {
       {error && <div class="error-message">{error}</div>}
 
       {/* Bill Information Card */}
-      <div class={`bill-info-card ${getBillStatus(bill)}`}>
-        <div class="bill-info-header">
-          <h3>{bill.name}</h3>
-          <span class={`status-badge ${bill.is_paid ? "paid" : "unpaid"}`}>
+      <div
+        class={`card p-8 mb-8 relative transition-all ${
+          getBillStatus(bill) === "due-today"
+            ? "bg-gradient-to-br from-yellow-50 to-white border-l-4 border-warning"
+            : getBillStatus(bill) === "overdue"
+            ? "bg-gradient-to-br from-red-50 to-white border-l-4 border-danger"
+            : ""
+        }`}
+      >
+        <div class="flex justify-between items-center mb-8 pb-4 border-b border-border">
+          <h3 class="m-0 text-3xl text-text-primary font-bold">{bill.name}</h3>
+          <span
+            class={`px-4 py-2 rounded-full text-sm font-semibold uppercase tracking-wide ${
+              bill.is_paid
+                ? "bg-green-100 text-green-800"
+                : "bg-red-100 text-red-800"
+            }`}
+          >
             {bill.is_paid ? "Paid" : "Unpaid"}
           </span>
         </div>
 
-        <div class="bill-info-grid">
-          <div class="info-item">
-            <label>Amount</label>
-            <div class="amount-display">${bill.amount.toFixed(2)}</div>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div class="flex flex-col gap-2">
+            <label class="text-xs text-text-secondary uppercase tracking-wide font-semibold">
+              Amount
+            </label>
+            <div class="text-3xl font-bold text-primary">
+              ${bill.amount.toFixed(2)}
+            </div>
           </div>
 
-          <div class="info-item">
-            <label>Recurrence Type</label>
-            <div>
+          <div class="flex flex-col gap-2">
+            <label class="text-xs text-text-secondary uppercase tracking-wide font-semibold">
+              Recurrence Type
+            </label>
+            <div class="text-lg text-text-primary font-medium">
               {bill.recurrence_type === "fixed_date" && "Monthly (Fixed Date)"}
               {bill.recurrence_type === "interval" && "Every X Days (Interval)"}
               {bill.recurrence_type === "none" && "One-time"}
             </div>
           </div>
 
-          <div class="info-item">
-            <label>
+          <div class="flex flex-col gap-2">
+            <label class="text-xs text-text-secondary uppercase tracking-wide font-semibold">
               {bill.recurrence_type === "fixed_date"
                 ? "Due Day"
                 : bill.recurrence_type === "interval"
                 ? "Interval"
                 : "Day Value"}
             </label>
-            <div>
+            <div class="text-lg text-text-primary font-medium">
               {bill.recurrence_type === "fixed_date" &&
                 `${bill.recurrence_days}${getDaySuffix(
                   bill.recurrence_days
@@ -242,26 +263,30 @@ export function BillDetails({ id }) {
           {(bill.recurrence_type === "interval" ||
             bill.recurrence_type === "none") &&
             bill.start_date && (
-              <div class="info-item">
-                <label>
+              <div class="flex flex-col gap-2">
+                <label class="text-xs text-text-secondary uppercase tracking-wide font-semibold">
                   {bill.recurrence_type === "interval"
                     ? "Start Date"
                     : "Due Date"}
                 </label>
-                <div>{formatDate(bill.start_date)}</div>
+                <div class="text-lg text-text-primary font-medium">
+                  {formatDate(bill.start_date)}
+                </div>
               </div>
             )}
 
-          <div class="info-item">
-            <label>Next Due Date</label>
+          <div class="flex flex-col gap-2">
+            <label class="text-xs text-text-secondary uppercase tracking-wide font-semibold">
+              Next Due Date
+            </label>
             <div
-              class={
+              class={`text-lg font-medium ${
                 getBillStatus(bill) === "overdue"
-                  ? "overdue-text"
+                  ? "text-danger font-semibold"
                   : getBillStatus(bill) === "due-today"
-                  ? "due-today-text"
-                  : ""
-              }
+                  ? "text-warning font-semibold"
+                  : "text-text-primary"
+              }`}
             >
               {bill.next_due_date
                 ? formatDate(bill.next_due_date)
@@ -269,41 +294,61 @@ export function BillDetails({ id }) {
             </div>
           </div>
 
-          <div class="info-item">
-            <label>Last Paid</label>
-            <div>
+          <div class="flex flex-col gap-2">
+            <label class="text-xs text-text-secondary uppercase tracking-wide font-semibold">
+              Last Paid
+            </label>
+            <div class="text-lg text-text-primary font-medium">
               {bill.last_paid_date ? formatDate(bill.last_paid_date) : "Never"}
             </div>
           </div>
 
-          <div class="info-item">
-            <label>Category</label>
-            <div>{bill.category || "None"}</div>
+          <div class="flex flex-col gap-2">
+            <label class="text-xs text-text-secondary uppercase tracking-wide font-semibold">
+              Category
+            </label>
+            <div class="text-lg text-text-primary font-medium">
+              {bill.category || "None"}
+            </div>
           </div>
 
           {bill.notes && (
-            <div class="info-item notes-item">
-              <label>Notes</label>
-              <div>{bill.notes}</div>
+            <div class="flex flex-col gap-2 col-span-full">
+              <label class="text-xs text-text-secondary uppercase tracking-wide font-semibold">
+                Notes
+              </label>
+              <div class="text-base text-text-secondary italic leading-relaxed">
+                {bill.notes}
+              </div>
             </div>
           )}
 
-          <div class="info-item">
-            <label>Created</label>
-            <div>{formatDateTime(bill.created_at)}</div>
+          <div class="flex flex-col gap-2">
+            <label class="text-xs text-text-secondary uppercase tracking-wide font-semibold">
+              Created
+            </label>
+            <div class="text-lg text-text-primary font-medium">
+              {formatDateTime(bill.created_at)}
+            </div>
           </div>
 
-          <div class="info-item">
-            <label>Last Updated</label>
-            <div>{formatDateTime(bill.updated_at)}</div>
+          <div class="flex flex-col gap-2">
+            <label class="text-xs text-text-secondary uppercase tracking-wide font-semibold">
+              Last Updated
+            </label>
+            <div class="text-lg text-text-primary font-medium">
+              {formatDateTime(bill.updated_at)}
+            </div>
           </div>
         </div>
       </div>
 
       {/* Payments Section */}
-      <div class="payments-section">
-        <div class="section-header">
-          <h3>Payment History</h3>
+      <div class="card p-8">
+        <div class="flex justify-between items-center mb-8 pb-4 border-b border-border">
+          <h3 class="m-0 text-2xl text-text-primary font-bold">
+            Payment History
+          </h3>
           <button class="btn btn-primary" onClick={handleAddPayment}>
             Add Payment
           </button>
@@ -340,13 +385,13 @@ export function BillDetails({ id }) {
           onCancel={handleDeleteCancel}
           isDeleting={deleting}
         >
-          <p>Are you sure you want to delete this payment?</p>
-          <div class="payment-details">
+          <p class="mb-4">Are you sure you want to delete this payment?</p>
+          <div class="bg-bg p-4 rounded-md mb-4 font-mono text-sm">
             <strong>Amount:</strong> ${paymentToDelete.amount.toFixed(2)}
             <br />
             <strong>Date:</strong> {formatDate(paymentToDelete.payment_date)}
           </div>
-          <p class="warning-text">This action cannot be undone.</p>
+          <p class="text-danger font-medium">This action cannot be undone.</p>
         </ConfirmationModal>
       )}
     </div>

@@ -1,4 +1,3 @@
-import "./style.css";
 import Modal from "../Modal";
 
 export default function ConfirmationModal({
@@ -35,20 +34,22 @@ export default function ConfirmationModal({
       isOpen={true}
       title={title}
       onClose={onCancel}
-      size="small"
+      size="sm"
       showActions={!hideActions}
       actions={actions}
     >
-      <div class="confirm-content">
+      <div class="p-6">
         {children ? (
           children
         ) : (
           <>
-            <p>
+            <p class="mb-4">
               {message} {itemName && <strong>{itemName}</strong>}
               {message && !message.endsWith("?") ? "?" : ""}
             </p>
-            {warningText && <p class="warning-text">{warningText}</p>}
+            {warningText && (
+              <p class="text-danger font-medium">{warningText}</p>
+            )}
           </>
         )}
       </div>

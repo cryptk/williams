@@ -2,7 +2,6 @@ import { useState, useEffect } from "preact/hooks";
 
 import { getStats } from "../services/api";
 import StatCard from "../components/StatCard";
-import "./Dashboard.css";
 
 export function Dashboard() {
   const [stats, setStats] = useState(null);
@@ -24,13 +23,13 @@ export function Dashboard() {
   };
 
   if (loading) {
-    return <div class="loading">Loading...</div>;
+    return <div class="flex items-center justify-center min-h-screen text-xl text-text-secondary">Loading...</div>;
   }
 
   return (
-    <div class="dashboard">
-      <h2>Dashboard</h2>
-      <div class="stats-grid">
+    <div>
+      <h2 class="text-3xl font-bold mb-8">Dashboard</h2>
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         <StatCard title="Total Bills" value={stats?.total_bills || 0} />
         <StatCard
           title="Total Amount"

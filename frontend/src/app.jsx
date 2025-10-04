@@ -50,7 +50,7 @@ export function App() {
   };
 
   if (loading) {
-    return <div class="loading">Loading...</div>;
+    return <div class="flex items-center justify-center min-h-screen text-xl text-text-secondary">Loading...</div>;
   }
 
   if (!user) {
@@ -58,9 +58,9 @@ export function App() {
   }
 
   return (
-    <div class="app">
+    <div class="min-h-screen flex flex-col">
       <Header user={user} onLogout={handleLogout} />
-      <main class="main-content">
+      <main class="flex-1 max-w-7xl w-full mx-auto px-8 py-8">
         <Router>
           <Dashboard path="/" />
           <Bills path="/bills" />

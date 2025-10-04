@@ -27,5 +27,8 @@
         "editor.formatOnSave": true,
         "editor.defaultFormatter": "esbenp.prettier-vscode"
     },
+    "files.associations": {
+        "*.css": "tailwindcss"
+    },
     "makefile.configureOnOpen": false,
 }

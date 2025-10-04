@@ -3,6 +3,7 @@
         "golang.go",
         "esbenp.prettier-vscode",
         "ms-vscode.makefile-tools",
-        "github.vscode-github-actions"
+        "github.vscode-github-actions",
+        "bradlc.vscode-tailwindcss"
     ]
 }

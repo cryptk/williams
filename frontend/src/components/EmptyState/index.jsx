@@ -1,8 +1,6 @@
-import "./style.css";
-
 export default function EmptyState({ message, children }) {
   return (
-    <div class="empty-state">
+    <div class="text-center py-16 px-8 text-text-secondary">
       {children || <p>{message}</p>}
     </div>
   );

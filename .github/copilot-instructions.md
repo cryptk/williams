@@ -93,29 +93,48 @@ williams/
 
 #### Writing Architectural References
 
-When creating architectural reference documentation:
+Architectural references document **HOW the project IS designed** and **WHY it is designed that way**. They are prescriptive guides for Copilot to understand current architecture, not historical records or future wishlists.
 
-1. **Start with "Why"**: Explain the reasoning for the architectural decision
-2. **Describe "What"**: Current implementation details and structure
-3. **Show "How"**: Usage patterns with concrete code examples
-4. **Highlight correct patterns**: Use ✅ to show proper usage
-5. **Note common pitfalls**: Use ❌ to show what NOT to do (only when necessary to avoid problems)
-6. **Provide context**: Explain when to use certain patterns over others
-7. **Include references**: Link to external documentation or resources
+**Core Principles:**
 
-**❌ Avoid:**
-- Past-tense migration narrative ("Successfully migrated Williams from...")
-- "Before/After" comparison sections
-- "Changes Made" or "Migration Checklist" sections
-- Historical context about what used to be in the codebase
-- References to previous implementations
+1. **Present state only**: Document the current architecture, not what it used to be or what it could become
+2. **Reasoning over history**: Explain WHY the current design exists (architectural rationale), not why it changed from before
+3. **Concise with examples**: Target ~200 lines, maximum 300 lines unless absolutely necessary
+4. **Minimal code repetition**: Don't copy large blocks of existing source code. Brief snippets to illustrate patterns only.
+5. **No alternatives**: Don't document other possible approaches, pros/cons analysis, or "could be done this way" sections
+6. **No future enhancements**: These are not TODO lists or feature wishlists
 
-**✅ Do:**
-- Write in present tense about current architecture
-- Focus on what should be done and why
-- Provide examples of correct implementation
-- Explain trade-offs and design decisions
-- Include troubleshooting for common issues
+**Required Structure:**
+
+1. **Overview**: What this architectural area covers (1-2 paragraphs)
+2. **Why This Design**: Architectural reasoning and benefits of current approach
+3. **What Exists**: Current implementation details (components, utilities, patterns)
+4. **How to Use**: Usage patterns with minimal code examples
+5. **Correct Patterns** (✅): Show proper usage
+6. **Anti-Patterns** (❌): Show what NOT to do (only critical mistakes)
+7. **Troubleshooting**: Common issues with current architecture
+
+**❌ Never Include:**
+- Migration notes or "we changed from X to Y" narrative
+- Before/After comparisons
+- Historical context ("previously we used...", "this replaced...")
+- Alternative approaches or comparison of options
+- Future enhancement ideas or TODO sections
+- Large code blocks copied directly from source (>10-15 lines)
+- Repetitive examples that don't add new information
+
+**✅ Always Include:**
+- Present-tense descriptions of current state
+- Architectural reasoning (why this design was chosen)
+- Brief, illustrative code snippets (<10 lines typically)
+- Usage patterns and conventions
+- Critical gotchas and their solutions
+
+**Example - Good vs Bad:**
+
+❌ **Bad**: "We migrated from CSS modules to TailwindCSS because CSS modules had scaling issues. Before, each component had a .css file. Now we use utilities. Here are 50 lines of example code from BillCard.jsx..."
+
+✅ **Good**: "Uses TailwindCSS for utility-first styling. This provides consistency through theme variables and reduces context switching. Custom utilities exist for repeated patterns (buttons, forms). Example: `<button class='btn btn-primary'>` combines base and variant utilities."
 
 **Document Separation:**
 - Put "how to use" guides in `docs/`
