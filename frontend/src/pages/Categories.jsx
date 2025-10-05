@@ -172,7 +172,7 @@ export function Categories() {
       {categories.length === 0 ? (
         <EmptyState message="No categories yet. Add your first category to organize your bills!" />
       ) : (
-        <div class="categories-grid">
+        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
           {categories.map((category) => (
             <CategoryCard
               key={category.id}
