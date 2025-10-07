@@ -175,7 +175,7 @@ export function BillDetails({ id }) {
     return (
       <div class="bill-details">
         <div class="page-header">
-          <Button variant="secondary-outline" onClick={handleBack}>
+          <Button variant="secondaryHollow" onClick={handleBack}>
             ← Back to Bills
           </Button>
         </div>
