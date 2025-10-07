@@ -28,7 +28,6 @@ export default function IconButton({
     <>
       <button
         class={`${variantClasses} border-none cursor-pointer text-xl p-1 rounded transition-all hover:scale-110 leading-none ${extraClasses}`}
-        onClick={() => onDelete(bill)}
         {...props}
       >
         {children}
