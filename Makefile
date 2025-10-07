@@ -48,7 +48,6 @@ run/backend: ## Run backend in development mode
 	cd backend && go run ./cmd/server/main.go
 
 clean: clean/frontend clean/backend ## Clean all build artifacts
-	rm -rf build
 
 clean/deep: clean/frontend/deep clean/backend/deep ## Deep clean all build artifacts including databases and node modules
 	rm -rf build

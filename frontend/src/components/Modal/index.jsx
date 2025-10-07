@@ -27,8 +27,8 @@ export default function Modal({
         onClick={(e) => e.stopPropagation()}
       >
         {/* Modal Header */}
-        <div class="flex justify-between items-center p-6 border-b border-border bg-bg rounded-t-lg">
-          <h3 class="m-0 text-text-primary text-xl font-semibold">{title}</h3>
+        <div class="flex justify-between items-center p-6 border-b border-secondary bg-white rounded-t-lg">
+          <h3 class="m-0 text-primary text-xl font-semibold">{title}</h3>
           <button
             class="bg-transparent border-none text-2xl cursor-pointer text-text-muted p-0 w-8 h-8 flex items-center justify-center rounded hover:bg-black/5 hover:text-text-primary transition-all"
             onClick={onClose}
@@ -42,7 +42,7 @@ export default function Modal({
 
         {/* Modal Actions */}
         {showActions && actions && (
-          <div class="flex gap-4 justify-end p-6 pt-4 border-t border-border">
+          <div class="flex gap-4 justify-end p-6 pt-4 border-t border-secondary">
             {actions}
           </div>
         )}

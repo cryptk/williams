@@ -9,7 +9,10 @@
     },
     "[javascriptreact]": {
         "editor.formatOnSave": true,
-        "editor.defaultFormatter": "esbenp.prettier-vscode"
+        "editor.defaultFormatter": "esbenp.prettier-vscode",
+        "editor.quickSuggestions": {
+            "strings": "on"
+        },
     },
     "[typescript]": {
         "editor.formatOnSave": true,
@@ -21,7 +24,13 @@
     },
     "[css]": {
         "editor.formatOnSave": true,
-        "editor.defaultFormatter": "esbenp.prettier-vscode"
+        "editor.defaultFormatter": "esbenp.prettier-vscode",
+        "prettier.printWidth": 120
+    },
+    "[tailwindcss]": {
+        "editor.formatOnSave": true,
+        "editor.defaultFormatter": "esbenp.prettier-vscode",
+        "prettier.printWidth": 120
     },
     "[html]": {
         "editor.formatOnSave": true,
@@ -31,4 +40,9 @@
         "*.css": "tailwindcss"
     },
     "makefile.configureOnOpen": false,
+    "tailwindCSS.classFunctions": ["tw", "clsx", "tw\\.[a-z-]+"]
+    // "tailwindCSS.includeLanguages": {
+    //     "javascript": "javascript",
+    //     "javascriptreact": "javascript"
+    // }
 }

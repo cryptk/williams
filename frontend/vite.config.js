@@ -3,7 +3,7 @@ import preact from "@preact/preset-vite";
 import tailwindcss from "@tailwindcss/vite";
 
 export default defineConfig({
-  plugins: [preact(), tailwindcss()],
+  plugins: [tailwindcss(), preact()],
   define: {
     __APP_VERSION__: JSON.stringify(process.env.VERSION || "dev"),
   },

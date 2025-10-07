@@ -12,6 +12,7 @@ import {
 } from "../services/api";
 import { getDaySuffix } from "../utils/helpers";
 import BillCard from "../components/BillCard";
+import { Button } from "../uielements";
 import ConfirmationModal from "../components/ConfirmationModal";
 import EmptyState from "../components/EmptyState";
 import BillFormModal from "../components/BillFormModal";
@@ -300,9 +301,13 @@ export function Bills() {
     <div class="bills">
       <div class="flex justify-between items-center mb-8">
         <h2 class="text-2xl font-bold text-text-primary m-0">Bills</h2>
-        <button class="btn btn-primary" onClick={() => setShowModal(true)}>
+        <Button
+          variant="primary"
+          extraClasses="px-6 py-4"
+          onClick={() => setShowModal(true)}
+        >
           Add Bill
-        </button>
+        </Button>
       </div>
 
       {bills.length === 0 ? (
