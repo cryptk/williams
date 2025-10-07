@@ -42,8 +42,4 @@
     "makefile.configureOnOpen": false,
     "tailwindCSS.classFunctions": ["tw", "clsx", "tw\\.[a-z-]+"],
     "editor.rulers": [80, 120]
-    // "tailwindCSS.includeLanguages": {
-    //     "javascript": "javascript",
-    //     "javascriptreact": "javascript"
-    // }
 }
