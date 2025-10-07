@@ -50,7 +50,11 @@ export function App() {
   };
 
   if (loading) {
-    return <div class="flex items-center justify-center min-h-screen text-xl text-text-secondary">Loading...</div>;
+    return (
+      <div class="flex items-center justify-center min-h-screen text-xl text-text-secondary">
+        Loading...
+      </div>
+    );
   }
 
   if (!user) {

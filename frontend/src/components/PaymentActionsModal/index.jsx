@@ -1,4 +1,5 @@
 import ConfirmationModal from "../ConfirmationModal";
+import { Button } from "../../uielements";
 
 export default function PaymentActionsModal({
   isOpen,
@@ -21,20 +22,22 @@ export default function PaymentActionsModal({
         What would you like to do for <strong>{billName}</strong>?
       </p>
       <div class="flex flex-col gap-3">
-        <button
-          class="btn btn-primary w-full"
+        <Button
+          variant="primary"
+          extraClasses="w-full"
           onClick={onRecordNextPayment}
           disabled={submitting || deleting}
         >
           {submitting ? "Recording..." : "Record Next Payment"}
-        </button>
-        <button
-          class="btn btn-danger w-full"
+        </Button>
+        <Button
+          variant="danger"
+          extraClasses="w-full"
           onClick={onDeleteLastPayment}
           disabled={submitting || deleting}
         >
           {deleting ? "Deleting..." : "Delete Last Payment"}
-        </button>
+        </Button>
       </div>
     </ConfirmationModal>
   );

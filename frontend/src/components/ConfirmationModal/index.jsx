@@ -1,4 +1,5 @@
 import Modal from "../Modal";
+import Button from "../../uielements/Button";
 
 export default function ConfirmationModal({
   title,
@@ -15,17 +16,12 @@ export default function ConfirmationModal({
 }) {
   const actions = hideActions ? null : (
     <>
-      <button type="button" class="btn btn-secondary" onClick={onCancel}>
+      <Button variant="secondary" onClick={onCancel}>
         Cancel
-      </button>
-      <button
-        type="button"
-        class={`btn ${confirmButtonClass}`}
-        onClick={onConfirm}
-        disabled={isDeleting}
-      >
+      </Button>
+      <Button variant="danger" onClick={onConfirm} disabled={isDeleting}>
         {isDeleting ? "Deleting..." : confirmButtonText}
-      </button>
+      </Button>
     </>
   );
 

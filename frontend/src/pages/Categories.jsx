@@ -1,6 +1,7 @@
 import { useState, useEffect } from "preact/hooks";
 import { getCategories, createCategory, deleteCategory } from "../services/api";
 import CategoryCard from "../components/CategoryCard";
+import { Button } from "../uielements";
 import ConfirmationModal from "../components/ConfirmationModal";
 import EmptyState from "../components/EmptyState";
 import CategoryFormModal from "../components/CategoryFormModal";
@@ -164,9 +165,9 @@ export function Categories() {
     <div class="categories">
       <div class="flex justify-between items-center mb-8">
         <h2 class="text-2xl font-bold text-text-primary m-0">Categories</h2>
-        <button class="btn btn-primary" onClick={() => setShowModal(true)}>
+        <Button variant="primary" onClick={() => setShowModal(true)}>
           Add Category
-        </button>
+        </Button>
       </div>
 
       {categories.length === 0 ? (

@@ -1,5 +1,6 @@
 import { useState } from "preact/hooks";
 import { login, register } from "../../services/auth";
+import { Button } from "../../uielements";
 
 export function Auth({ onLoginSuccess }) {
   const [isLogin, setIsLogin] = useState(true);
@@ -35,18 +36,18 @@ export function Auth({ onLoginSuccess }) {
 
   return (
     <div class="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary to-secondary p-8">
-      <div class="card p-12 w-full max-w-md shadow-lg">
+      <div class="cardstatic p-12 w-full max-w-md shadow-lg !hover:">
         <h1 class="text-4xl text-center mb-2 text-primary">💵 Williams</h1>
         <p class="text-center text-text-secondary mb-8">
           Get to know your bills
         </p>
 
-        <div class="flex gap-2 mb-8 border-b-2 border-border">
+        <div class="flex gap-2 mb-8 border-b-2 border-secondary">
           <button
             class={`flex-1 py-3 bg-transparent text-base font-medium cursor-pointer transition-all ${
               isLogin
                 ? "text-primary border-b-3 border-b-primary -mb-0.5"
-                : "text-text-secondary border-b-3 border-b-transparent -mb-0.5"
+                : "text-gray border-b-3 border-b-transparent -mb-0.5"
             }`}
             onClick={() => {
               setIsLogin(true);
@@ -59,7 +60,7 @@ export function Auth({ onLoginSuccess }) {
             class={`flex-1 py-3 bg-transparent text-base font-medium cursor-pointer transition-all ${
               !isLogin
                 ? "text-primary border-b-3 border-b-primary -mb-0.5"
-                : "text-text-secondary border-b-3 border-b-transparent -mb-0.5"
+                : "text-gray border-b-3 border-b-transparent -mb-0.5"
             }`}
             onClick={() => {
               setIsLogin(false);
@@ -72,7 +73,7 @@ export function Auth({ onLoginSuccess }) {
 
         <form
           onSubmit={handleSubmit}
-          class="flex flex-col gap-6 transition-all duration-300 overflow-hidden"
+          class="flex flex-col transition-all duration-300 overflow-hidden"
         >
           {error && <div class="error-message">{error}</div>}
 
@@ -95,8 +96,8 @@ export function Auth({ onLoginSuccess }) {
           <div
             class={`form-group transition-all duration-300 ease-in-out ${
               !isLogin
-                ? "max-h-32 opacity-100 mb-6"
-                : "max-h-0 opacity-0 mb-0 overflow-hidden"
+                ? "max-h-32 opacity-100"
+                : "max-h-0 opacity-0 mb-0 p-0 overflow-hidden"
             }`}
           >
             <label class="form-label" htmlFor="email">
@@ -130,13 +131,14 @@ export function Auth({ onLoginSuccess }) {
             />
           </div>
 
-          <button
+          <Button
             type="submit"
-            class="btn btn-primary w-full mt-2"
+            variant="primary"
+            extraClasses="w-full mt-2"
             disabled={loading}
           >
-            {loading ? "Please wait..." : (isLogin ? "Login" : "Register")}
-          </button>
+            {loading ? "Please wait..." : isLogin ? "Login" : "Register"}
+          </Button>
         </form>
       </div>
     </div>

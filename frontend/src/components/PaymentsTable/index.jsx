@@ -1,3 +1,5 @@
+import { IconButton } from "../../uielements";
+
 export default function PaymentsTable({
   payments,
   formatDate,
@@ -73,13 +75,13 @@ export default function PaymentsTable({
                       : ""
                   }`}
                 >
-                  <button
-                    class="bg-danger/10 hover:bg-danger hover:text-white px-2 py-1 rounded transition-colors text-lg"
+                  <IconButton
+                    variant="danger"
                     onClick={() => onDeletePayment(payment)}
                     title="Delete payment"
                   >
                     🗑️
-                  </button>
+                  </IconButton>
                 </td>
               </tr>
             ))}

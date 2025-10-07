@@ -12,6 +12,7 @@ import EmptyState from "../components/EmptyState";
 import PaymentFormModal from "../components/PaymentFormModal";
 import PaymentsTable from "../components/PaymentsTable";
 import { toast } from "../components/Toast";
+import { Button, Pill } from "../uielements";
 
 export function BillDetails({ id }) {
   // useToast removed, use react-toastify's toast directly
@@ -174,10 +175,9 @@ export function BillDetails({ id }) {
     return (
       <div class="bill-details">
         <div class="page-header">
-          <button class="btn btn-secondary back-btn" onClick={handleBack}>
+          <Button variant="secondary-outline" onClick={handleBack}>
             ← Back to Bills
-          </button>
-          <h2>Bill Not Found</h2>
+          </Button>
         </div>
         <div class="error-message">The requested bill could not be found.</div>
       </div>
@@ -186,11 +186,10 @@ export function BillDetails({ id }) {
 
   return (
     <div class="bill-details">
-      <div class="page-header">
-        <button class="btn btn-secondary back-btn" onClick={handleBack}>
+      <div class="page-header pb-2">
+        <Button variant="secondaryHollow" onClick={handleBack}>
           ← Back to Bills
-        </button>
-        <h2>Bill Details</h2>
+        </Button>
       </div>
 
       {error && <div class="error-message">{error}</div>}
@@ -199,23 +198,17 @@ export function BillDetails({ id }) {
       <div
         class={`card p-8 mb-8 relative transition-all ${
           getBillStatus(bill) === "due-today"
-            ? "bg-gradient-to-br from-yellow-50 to-white border-l-4 border-warning"
+            ? "card-highlight-warning"
             : getBillStatus(bill) === "overdue"
-            ? "bg-gradient-to-br from-red-50 to-white border-l-4 border-danger"
+            ? "card-highlight-danger"
             : ""
         }`}
       >
-        <div class="flex justify-between items-center mb-8 pb-4 border-b border-border">
+        <div class="flex justify-between items-center mb-8 pb-4 border-b border-gray-200">
           <h3 class="m-0 text-3xl text-text-primary font-bold">{bill.name}</h3>
-          <span
-            class={`px-4 py-2 rounded-full text-sm font-semibold uppercase tracking-wide ${
-              bill.is_paid
-                ? "bg-green-100 text-green-800"
-                : "bg-red-100 text-red-800"
-            }`}
-          >
+          <Pill variant={bill.is_paid ? "success" : "danger"} size="lg">
             {bill.is_paid ? "Paid" : "Unpaid"}
-          </span>
+          </Pill>
         </div>
 
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -282,9 +275,9 @@ export function BillDetails({ id }) {
             <div
               class={`text-lg font-medium ${
                 getBillStatus(bill) === "overdue"
-                  ? "text-danger font-semibold"
+                  ? "text-danger-dark font-semibold"
                   : getBillStatus(bill) === "due-today"
-                  ? "text-warning font-semibold"
+                  ? "text-warning-dark font-semibold"
                   : "text-text-primary"
               }`}
             >
@@ -345,13 +338,13 @@ export function BillDetails({ id }) {
 
       {/* Payments Section */}
       <div class="card p-8">
-        <div class="flex justify-between items-center mb-8 pb-4 border-b border-border">
+        <div class="flex justify-between items-center mb-8 pb-4 border-b border-gray-200">
           <h3 class="m-0 text-2xl text-text-primary font-bold">
             Payment History
           </h3>
-          <button class="btn btn-primary" onClick={handleAddPayment}>
+          <Button variant="primary" onClick={handleAddPayment}>
             Add Payment
-          </button>
+          </Button>
         </div>
 
         {payments.length === 0 ? (

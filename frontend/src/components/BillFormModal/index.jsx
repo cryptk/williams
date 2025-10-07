@@ -1,4 +1,5 @@
 import Modal from "../Modal";
+import { Button } from "../../uielements";
 import { getDaySuffix } from "../../utils/helpers";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
@@ -75,7 +76,7 @@ export default function BillFormModal({
               name="recurrence_type"
               value={formData.recurrence_type}
               onChange={onInputChange}
-              class="inline-select"
+              class="form-inline-input"
               aria-label="Recurrence type"
               required
             >
@@ -93,13 +94,13 @@ export default function BillFormModal({
                   name="recurrence_days"
                   value={formData.recurrence_days}
                   onChange={onInputChange}
-                  class="inline-number"
+                  class="form-inline-input"
                   aria-label="Day of month (1-31)"
                   aria-describedby="day-suffix-fixed"
                   required
                   min="1"
                   max="31"
-                  placeholder="15"
+                  placeholder="##"
                 />
                 <span
                   id="day-suffix-fixed"
@@ -121,13 +122,13 @@ export default function BillFormModal({
                   name="recurrence_days"
                   value={formData.recurrence_days}
                   onChange={onInputChange}
-                  class="inline-number"
+                  class="form-inline-input"
                   aria-label="Recurrence interval in days (1-365)"
                   aria-describedby="interval-suffix"
                   required
                   min="1"
                   max="365"
-                  placeholder="14"
+                  placeholder="##"
                 />
                 <span
                   id="interval-suffix"
@@ -140,7 +141,7 @@ export default function BillFormModal({
                   onChange={onDateChange}
                   dateFormat="MM/dd/yyyy"
                   placeholderText="Select date"
-                  className="inline-date-picker"
+                  className="form-inline-input"
                   ariaLabelledBy="interval-start-label"
                   id="start_date_interval"
                   required
@@ -159,7 +160,7 @@ export default function BillFormModal({
                   onChange={onDateChange}
                   dateFormat="MM/dd/yyyy"
                   placeholderText="Select date"
-                  className="inline-date-picker"
+                  className="form-inline-input"
                   ariaLabelledBy="due-date-label"
                   id="start_date_once"
                   required
@@ -181,7 +182,7 @@ export default function BillFormModal({
             name="category_id"
             value={formData.category_id}
             onChange={onInputChange}
-            class="form-select"
+            class="form-input"
           >
             <option value="">Select a category</option>
             {categories.map((cat) => (
@@ -201,7 +202,7 @@ export default function BillFormModal({
             name="notes"
             value={formData.notes}
             onChange={onInputChange}
-            class="form-textarea"
+            class="form-input"
             rows="3"
             placeholder="Add any notes about this bill..."
           />
@@ -209,11 +210,11 @@ export default function BillFormModal({
 
         {error && <div class="error-message">{error}</div>}
 
-        <div class="flex gap-4 justify-end pt-6 mt-6 border-t border-border">
-          <button type="button" class="btn btn-secondary" onClick={onCancel}>
+        <div class="flex gap-4 justify-end pt-6 mt-6 border-t border-secondary">
+          <Button variant="secondary" type="button" onClick={onCancel}>
             Cancel
-          </button>
-          <button type="submit" class="btn btn-primary" disabled={submitting}>
+          </Button>
+          <Button variant="primary" type="submit" disabled={submitting}>
             {submitting
               ? editingBill
                 ? "Updating..."
@@ -221,7 +222,7 @@ export default function BillFormModal({
               : editingBill
               ? "Update Bill"
               : "Add Bill"}
-          </button>
+          </Button>
         </div>
       </form>
     </Modal>

@@ -1,44 +1,91 @@
 @import "tailwindcss";
 
 /* Custom Theme Configuration */
-@theme {
-  /* Colors - matching existing Williams color scheme */
-  --color-primary: #4a90e2;
-  --color-primary-dark: #357abd;
-  --color-secondary: #50e3c2;
-  --color-danger: #e74c3c;
-  --color-danger-dark: #c0392b;
-  --color-success: #2ecc71;
-  --color-warning: #f39c12;
-  
-  /* Backgrounds */
-  --color-bg-page: #f5f7fa;
-  --color-bg-card: #ffffff;
-  --color-bg-secondary: #e1e8ed;
-  
-  /* Borders */
-  --color-border: #e1e8ed;
-  
-  /* Text colors */
-  --color-text-primary: #333333;
-  --color-text-secondary: #666666;
-  --color-text-muted: #888888;
-  
-  /* Shadows - updated for v4 naming (shadow-sm is now the default) */
-  --shadow-xs: 0 1px 3px rgba(0, 0, 0, 0.1);
-  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.1);
-  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.1);
-  --shadow-lg: 0 4px 20px rgba(0, 0, 0, 0.15);
-  
-  /* Border radius - updated for v4 naming (rounded-sm is now the default) */
-  --radius-xs: 4px;
-  --radius-sm: 6px;
-  --radius-md: 8px;
-  --radius-lg: 12px;
-  --radius-full: 9999px;
-  
-  /* Font family */
-  --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, sans-serif;
+@theme static {
+  --color-primary-50: var(--color-sky-50);
+  --color-primary-100: var(--color-sky-100);
+  --color-primary-200: var(--color-sky-200);
+  --color-primary-300: var(--color-sky-300);
+  --color-primary-400: var(--color-sky-400);
+  --color-primary-500: var(--color-sky-500);
+  --color-primary-600: var(--color-sky-600);
+  --color-primary-700: var(--color-sky-700);
+  --color-primary-800: var(--color-sky-800);
+  --color-primary-900: var(--color-sky-900);
+  --color-primary-950: var(--color-sky-950);
+  --color-primary-light: var(--color-primary-200);
+  --color-primary: var(--color-primary-600);
+  --color-primary-dark: var(--color-primary-700);
+
+  --color-secondary-50: var(--color-gray-50);
+  --color-secondary-100: var(--color-gray-100);
+  --color-secondary-200: var(--color-gray-200);
+  --color-secondary-300: var(--color-gray-300);
+  --color-secondary-400: var(--color-gray-400);
+  --color-secondary-500: var(--color-gray-500);
+  --color-secondary-600: var(--color-gray-600);
+  --color-secondary-700: var(--color-gray-700);
+  --color-secondary-800: var(--color-gray-800);
+  --color-secondary-900: var(--color-gray-900);
+  --color-secondary-950: var(--color-gray-950);
+  --color-secondary-light: var(--color-secondary-100);
+  --color-secondary: var(--color-secondary-300);
+  --color-secondary-dark: var(--color-secondary-500);
+
+  --color-success-50: var(--color-emerald-50);
+  --color-success-100: var(--color-emerald-100);
+  --color-success-200: var(--color-emerald-200);
+  --color-success-300: var(--color-emerald-300);
+  --color-success-400: var(--color-emerald-400);
+  --color-success-500: var(--color-emerald-500);
+  --color-success-600: var(--color-emerald-600);
+  --color-success-700: var(--color-emerald-700);
+  --color-success-800: var(--color-emerald-800);
+  --color-success-900: var(--color-emerald-900);
+  --color-success-950: var(--color-emerald-950);
+  --color-success-light: var(--color-success-200);
+  --color-success: var(--color-success-500);
+  --color-success-dark: var(--color-success-700);
+
+  --color-warning-50: var(--color-amber-50);
+  --color-warning-100: var(--color-amber-100);
+  --color-warning-200: var(--color-amber-200);
+  --color-warning-300: var(--color-amber-300);
+  --color-warning-400: var(--color-amber-400);
+  --color-warning-500: var(--color-amber-500);
+  --color-warning-600: var(--color-amber-600);
+  --color-warning-700: var(--color-amber-700);
+  --color-warning-800: var(--color-amber-800);
+  --color-warning-900: var(--color-amber-900);
+  --color-warning-950: var(--color-amber-950);
+  --color-warning-light: var(--color-warning-100);
+  --color-warning: var(--color-warning-500);
+  --color-warning-dark: var(--color-warning-700);
+
+  --color-danger-50: var(--color-red-50);
+  --color-danger-100: var(--color-red-100);
+  --color-danger-200: var(--color-red-200);
+  --color-danger-300: var(--color-red-300);
+  --color-danger-400: var(--color-red-400);
+  --color-danger-500: var(--color-red-500);
+  --color-danger-600: var(--color-red-600);
+  --color-danger-700: var(--color-red-700);
+  --color-danger-800: var(--color-red-800);
+  --color-danger-900: var(--color-red-900);
+  --color-danger-950: var(--color-red-950);
+  --color-danger-light: var(--color-danger-100);
+  --color-danger: var(--color-danger-500);
+  --color-danger-dark: var(--color-danger-700);
+
+  /* --color-card-bg: #ffffff; */
+  --color-page-bg: #f5f7fa;
+  --color-card-bg: var(--color-white);
+
+  /* --text-color-primary: var(--color-gray-600); */
+  --text-color-gray: var(--color-gray-800);
+  --text-color-white: var(--color-gray-100);
+  --text-color-muted: var(--color-gray-400);
+  /* --text-color-theme-primary: var(--color-primary-700); */
 }
 
 /* Base styles */
@@ -46,7 +93,7 @@
   * {
     border-color: var(--color-border);
   }
-  
+
   body {
     background-color: var(--color-bg-page);
     color: var(--color-text-primary);
@@ -54,7 +101,7 @@
     margin: 0;
     padding: 0;
   }
-  
+
   /* Keyframe animations */
   @keyframes fadeIn {
     from {
@@ -64,7 +111,7 @@
       opacity: 1;
     }
   }
-  
+
   @keyframes slideUp {
     from {
       transform: translateY(20px);
@@ -77,231 +124,75 @@
   }
 }
 
-/* Custom utilities using @utility directive (v4 syntax) */
+/* Card Utility Classes */
 @utility card {
-  background-color: var(--color-bg-card);
-  border-radius: var(--radius-md);
-  box-shadow: var(--shadow-sm);
+  @apply bg-card-bg rounded-md p-6;
+  @apply drop-shadow-md drop-shadow-secondary-dark hover:drop-shadow-xl hover:drop-shadow-secondary;
+  @apply transition-all duration-200 hover:-translate-y-0.5;
 }
 
-@utility btn {
-  padding-left: 1.5rem;
-  padding-right: 1.5rem;
-  padding-top: 0.75rem;
-  padding-bottom: 0.75rem;
-  border-radius: var(--radius-sm);
-  font-weight: 500;
-  transition-property: all;
-  transition-duration: 200ms;
-  display: inline-block;
+@utility cardstatic {
+  @apply bg-card-bg rounded-md p-6;
+  @apply drop-shadow-md drop-shadow-secondary-dark;
+  @apply transition-all duration-200;
 }
 
-@utility btn-primary {
-  background-color: var(--color-primary);
-  color: white;
-  
-  &:hover {
-    background-color: var(--color-primary-dark);
-    transform: translateY(-1px);
-    box-shadow: var(--shadow-sm);
-  }
-  
-  &:disabled {
-    opacity: 0.6;
-    cursor: not-allowed;
-    transform: none;
-  }
+@utility card-highlight-warning {
+  @apply bg-gradient-to-br from-warning-light to-card-bg border-l-4 border-warning;
 }
 
-@utility btn-secondary {
-  background-color: var(--color-bg-page);
-  color: var(--color-text-primary);
-  border-width: 2px;
-  border-color: var(--color-border);
-  
-  &:hover {
-    background-color: var(--color-bg-secondary);
-    transform: translateY(-1px);
-  }
-  
-  &:disabled {
-    opacity: 0.6;
-    cursor: not-allowed;
-    transform: none;
-  }
+@utility card-highlight-danger {
+  @apply bg-gradient-to-br from-danger-light to-card-bg border-l-4 border-danger;
 }
 
-@utility btn-danger {
-  background-color: var(--color-danger);
-  color: white;
-  
-  &:hover {
-    background-color: var(--color-danger-dark);
-    transform: translateY(-1px);
-    box-shadow: var(--shadow-sm);
-  }
-  
-  &:disabled {
-    opacity: 0.6;
-    cursor: not-allowed;
-    transform: none;
-  }
-}
-
-/* Form utility classes */
+/* Form Utility Classes */
 @utility form-group {
-  margin-bottom: 1.5rem;
+  @apply mb-6;
 }
 
 @utility form-label {
-  display: block;
-  margin-bottom: 0.5rem;
-  color: var(--color-text-primary);
-  font-weight: 500;
-  font-size: 0.95rem;
+  @apply block mb-2 font-medium text-gray text-sm;
 }
 
 @utility form-input {
-  width: 100%;
-  padding: 0.75rem;
-  border: 2px solid var(--color-border);
-  border-radius: var(--radius-sm);
-  font-size: 1rem;
-  transition: all 0.2s;
-  background: white;
-  color: var(--color-text-primary);
-  
+  @apply w-full p-2 border-2 border-solid border-secondary rounded-md bg-card-bg;
+  @apply text-base text-gray;
+  @apply transition-all duration-200;
+
   &:focus {
-    outline: none;
-    border-color: var(--color-primary);
+    @apply outline-none border-primary;
   }
-  
+
   &::placeholder {
-    color: var(--color-text-muted);
+    @apply text-muted;
   }
 }
 
-@utility form-select {
-  width: 100%;
-  padding: 0.75rem;
-  border: 2px solid var(--color-border);
-  border-radius: var(--radius-sm);
-  font-size: 1rem;
-  transition: all 0.2s;
-  background: white;
-  color: var(--color-text-primary);
-  
+@utility form-inline-input {
+  @apply w-auto max-w-30 p-2 border-2 border-solid border-secondary rounded-md bg-card-bg;
+  @apply text-base text-gray;
+  @apply transition-colors duration-200;
+
   &:focus {
-    outline: none;
-    border-color: var(--color-primary);
+    @apply outline-none border-primary;
+  }
+
+  &::placeholder {
+    @apply text-muted;
   }
 }
 
-@utility form-textarea {
-  width: 100%;
-  padding: 0.75rem;
-  border: 2px solid var(--color-border);
-  border-radius: var(--radius-sm);
-  font-size: 1rem;
-  transition: all 0.2s;
-  background: white;
-  color: var(--color-text-primary);
-  resize: vertical;
-  min-height: 80px;
-  
-  &:focus {
-    outline: none;
-    border-color: var(--color-primary);
-  }
+textarea.form-input {
+  @apply min-h-20;
 }
 
-@utility error-message {
-  background: #fee;
-  color: var(--color-danger);
-  padding: 1rem;
-  border-radius: var(--radius-sm);
-  border: 1px solid var(--color-danger);
-  margin-bottom: 1rem;
-}
-
-/* Screen reader only utility */
-@utility sr-only {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  padding: 0;
-  margin: -1px;
-  overflow: hidden;
-  clip: rect(0, 0, 0, 0);
-  white-space: nowrap;
-  border-width: 0;
-}
-
-/* Inline form element utilities for BillFormModal recurrence sentence */
-@utility inline-select {
-  padding: 0.4rem 0.6rem;
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-xs);
-  background-color: white;
-  font-size: 1rem;
-  cursor: pointer;
-  transition: border-color 0.2s;
-  width: auto;
-  max-width: 120px;
-  
-  &:focus {
-    outline: none;
-    border-color: var(--color-primary);
-    box-shadow: 0 0 0 2px rgba(74, 144, 226, 0.1);
-  }
-}
-
-@utility inline-number {
-  width: 4rem;
-  padding: 0.4rem 0.5rem;
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-xs);
-  background-color: white;
-  font-size: 1rem;
-  text-align: center;
-  transition: border-color 0.2s;
-  flex-shrink: 0;
-  max-width: 4rem;
-  min-width: 4rem;
-  
+input.form-inline-input[type="number"] {
   /* Remove spinner arrows */
   &::-webkit-outer-spin-button,
   &::-webkit-inner-spin-button {
     -webkit-appearance: none;
     margin: 0;
   }
-  
   -moz-appearance: textfield;
   appearance: textfield;
-  
-  &:focus {
-    outline: none;
-    border-color: var(--color-primary);
-    box-shadow: 0 0 0 2px rgba(74, 144, 226, 0.1);
-  }
-}
-
-@utility inline-date-picker {
-  padding: 0.4rem 0.6rem;
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-xs);
-  background-color: white;
-  font-size: 1rem;
-  cursor: pointer;
-  transition: border-color 0.2s;
-  width: 8rem;
-  max-width: 8rem;
-  min-width: 8rem;
-  flex-shrink: 0;
-  
-  &:focus {
-    outline: none;
-    border-color: var(--color-primary);
-    box-shadow: 0 0 0 2px rgba(74, 144, 226, 0.1);
-  }
 }

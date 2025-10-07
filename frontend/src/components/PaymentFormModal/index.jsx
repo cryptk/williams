@@ -1,4 +1,5 @@
 import Modal from "../Modal";
+import { Button } from "../../uielements";
 
 export default function PaymentFormModal({
   isOpen,
@@ -60,7 +61,7 @@ export default function PaymentFormModal({
             name="notes"
             value={formData.notes}
             onChange={onInputChange}
-            class="form-textarea"
+            class="form-input"
             rows="3"
             placeholder="Add any notes about this payment..."
           />
@@ -68,13 +69,13 @@ export default function PaymentFormModal({
 
         {error && <div class="error-message">{error}</div>}
 
-        <div class="flex gap-4 justify-end pt-6 mt-6 border-t border-border">
-          <button type="button" class="btn btn-secondary" onClick={onCancel}>
+        <div class="flex gap-4 justify-end pt-6 mt-6 border-t border-secondary">
+          <Button variant="secondary" type="button" onClick={onCancel}>
             Cancel
-          </button>
-          <button type="submit" class="btn btn-primary" disabled={submitting}>
+          </Button>
+          <Button variant="primary" type="submit" disabled={submitting}>
             {submitting ? "Adding..." : "Add Payment"}
-          </button>
+          </Button>
         </div>
       </form>
     </Modal>
