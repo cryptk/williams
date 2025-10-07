@@ -7,34 +7,34 @@ export function Header({ user, onLogout }) {
       <div class="max-w-7xl mx-auto px-8 flex justify-between items-center">
         <h1 class="text-2xl font-bold text-primary">
           Williams{" "}
-          <span class="text-sm text-text-muted">
+          <span class="text-sm text-muted">
             {typeof __APP_VERSION__ !== "undefined" ? __APP_VERSION__ : "dev"}
           </span>
         </h1>
         <nav class="flex gap-8 items-center">
           <Link
-            activeClassName="!text-primary"
-            class="no-underline text-text-primary font-medium transition-colors hover:text-primary"
+            activeClassName="text-primary"
+            class="no-underline font-medium transition-colors hover:text-primary"
             href="/"
           >
             Dashboard
           </Link>
           <Link
-            activeClassName="!text-primary"
-            class="no-underline text-text-primary font-medium transition-colors hover:text-primary"
+            activeClassName="text-primary"
+            class="no-underline font-medium transition-colors hover:text-primary"
             href="/bills"
           >
             Bills
           </Link>
           <Link
-            activeClassName="!text-primary"
-            class="no-underline text-text-primary font-medium transition-colors hover:text-primary"
+            activeClassName="text-primary"
+            class="no-underline font-medium transition-colors hover:text-primary"
             href="/categories"
           >
             Categories
           </Link>
           <div class="flex items-center gap-4 ml-8">
-            <span class="font-medium text-text-primary">{user.username}</span>
+            <span class="font-medium text-primary">{user.username}</span>
             <Button
               variant="primaryHollow"
               extraClasses="px-2! py-1!"
