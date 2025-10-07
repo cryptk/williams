@@ -28,7 +28,7 @@ func AuthMiddleware(authService *services.AuthService) gin.HandlerFunc {
 		}
 
 		token := parts[1]
-		userID, err := authService.ValidateToken(token)
+		user_claims, err := authService.ValidateToken(token)
 		if err != nil {
 			log.Warn().Err(err).Str("path", c.Request.URL.Path).Msg("Invalid or expired token")
 			c.JSON(http.StatusUnauthorized, gin.H{"error": "invalid or expired token"})
@@ -37,15 +37,15 @@ func AuthMiddleware(authService *services.AuthService) gin.HandlerFunc {
 		}
 
 		// Verify the user still exists in the database
-		_, err = authService.GetUserByID(userID)
+		_, err = authService.GetUserByID(user_claims.Subject)
 		if err != nil {
-			log.Warn().Err(err).Str("user_id", userID).Str("path", c.Request.URL.Path).Msg("User not found for valid token")
+			log.Warn().Err(err).Str("user_id", user_claims.Subject).Str("path", c.Request.URL.Path).Msg("User not found for valid token")
 			c.JSON(http.StatusUnauthorized, gin.H{"error": "user not found"})
 			c.Abort()
 			return
 		}
 
-		c.Set("user_id", userID)
+		c.Set("user_id", user_claims.Subject)
 		c.Next()
 	}
 }

@@ -19,6 +19,13 @@ type AuthService struct {
 	jwtSecret    []byte
 }
 
+// JWTClaims represents the JWT claims structure
+// Currently we have no custom claims, but this struct can be extended in the future
+// to include roles, permissions, or other user-related information.
+type JWTClaims struct {
+	jwt.RegisteredClaims
+}
+
 // NewAuthService creates a new authentication service
 func NewAuthService(userRepo repository.UserRepository, categoryRepo repository.CategoryRepository, jwtSecret string) *AuthService {
 	return &AuthService{
@@ -90,37 +97,56 @@ func (s *AuthService) Login(req *models.LoginRequest) (string, *models.User, err
 }
 
 // ValidateToken validates a JWT token and returns the user ID
-func (s *AuthService) ValidateToken(tokenString string) (string, error) {
-	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
-		// Validate signing method
-		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
-			return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
-		}
+func (s *AuthService) ValidateToken(tokenString string) (*JWTClaims, error) {
+	claims := &JWTClaims{}
+
+	keyFunc := func(token *jwt.Token) (any, error) {
+		// We use the WithValidMethods option in ParseWithClaims,
+		// so we don't need to check the signing method here
 		return s.jwtSecret, nil
-	})
+	}
+
+	// We are using the jwt library provided options to enforce
+	// valid signing methods and other checks.
+	// This ensures that we are running these checks in ways that follow best practices.
+	token, err := jwt.ParseWithClaims(
+		tokenString,
+		claims,
+		keyFunc,
+		jwt.WithValidMethods([]string{
+			jwt.SigningMethodHS256.Alg(),
+			jwt.SigningMethodHS384.Alg(),
+			jwt.SigningMethodHS512.Alg(),
+		}),
+		jwt.WithIssuedAt(),
+		jwt.WithLeeway(5*time.Second), // Allow 5 seconds of clock skew
+		jwt.WithExpirationRequired(),
+	)
 
 	if err != nil {
-		return "", err
+		log.Error().Err(err).Msg("Failed to parse token")
+		return nil, err
 	}
 
-	if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
-		userID, ok := claims["user_id"].(string)
-		if !ok {
-			return "", errors.New("invalid token claims")
-		}
-		return userID, nil
+	if !token.Valid {
+		return nil, errors.New("invalid token")
 	}
 
-	return "", errors.New("invalid token")
+	// Token is valid, return the user ID from claims
+	// In the future we might want to return more information from the claims
+	// such as roles or permissions.
+	log.Debug().Str("user_id", claims.Subject).Msg("Token validated successfully")
+	return claims, nil
 }
 
 // generateToken creates a JWT token for a user
 func (s *AuthService) generateToken(user *models.User) (string, error) {
-	claims := jwt.MapClaims{
-		"user_id":  user.ID,
-		"username": user.Username,
-		"exp":      time.Now().Add(time.Hour * 24 * 7).Unix(), // 7 days
-		"iat":      time.Now().Unix(),
+	claims := JWTClaims{
+		RegisteredClaims: jwt.RegisteredClaims{
+			Subject:   user.ID,
+			ExpiresAt: jwt.NewNumericDate(time.Now().Add(time.Hour * 24 * 7)), // 7 days
+			IssuedAt:  jwt.NewNumericDate(time.Now()),
+		},
 	}
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
