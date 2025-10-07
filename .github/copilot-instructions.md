@@ -293,7 +293,7 @@ type User struct {
     Username     string    `json:"username"`
     Email        string    `json:"email"`
     PasswordHash string    `json:"-"` // Never exposed in JSON
-    Role         string    `json:"role"` // User role: "user" or "admin"
+    Roles        []string  `json:"roles"` // User roles, supports multiple: ["user"], ["admin"], or ["user", "admin"]
     CreatedAt    time.Time `json:"created_at"`
     UpdatedAt    time.Time `json:"updated_at"`
 }

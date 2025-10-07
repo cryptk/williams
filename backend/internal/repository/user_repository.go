@@ -52,6 +52,7 @@ func (r *userRepository) CreateWithFirstUserCheck(user *models.User, adminRoles 
 
 		// 2. Determine the dialect and acquire the table-level lock on the 'users' table.
 		var lockSQL string
+		var unlockSQL string
 		dialect := tx.Dialector.Name()
 
 		switch dialect {
@@ -61,6 +62,7 @@ func (r *userRepository) CreateWithFirstUserCheck(user *models.User, adminRoles 
 		case "mysql":
 			// LOCK TABLES users WRITE acquires a table-level write lock.
 			lockSQL = "LOCK TABLES users WRITE"
+			unlockSQL = "UNLOCK TABLES"
 		case "sqlite":
 			// SQLite uses file-level locking for transactions, providing the necessary serialization
 			// and atomicity. Explicit table locking is not necessary or supported with this syntax.
@@ -70,9 +72,17 @@ func (r *userRepository) CreateWithFirstUserCheck(user *models.User, adminRoles 
 			return fmt.Errorf("unsupported database dialect for table locking: %s", dialect)
 		}
 
+		if unlockSQL != "" {
+			// Ensure we unlock tables at the end of the transaction if using MySQL
+			defer func() {
+				if err := tx.Exec(unlockSQL).Error; err != nil {
+					log.Error().Err(err).Msgf("failed to release table lock for %s (SQL: %s)", dialect, unlockSQL)
+				}
+			}()
+		}
+
 		if lockSQL != "" {
 			if err := tx.Exec(lockSQL).Error; err != nil {
-				tx.Rollback()
 				return fmt.Errorf("failed to acquire table lock for %s (SQL: %s): %w", dialect, lockSQL, err)
 			}
 		}
