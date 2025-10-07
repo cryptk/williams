@@ -1,7 +1,7 @@
 export default function CategoryCard({ category, onDelete }) {
   return (
     <div
-      class="card text-center relative"
+      class="card text-center relative group"
       style={{ borderTop: `4px solid ${category.color || "#4a90e2"}` }}
     >
       <button
@@ -9,7 +9,7 @@ export default function CategoryCard({ category, onDelete }) {
         onClick={() => onDelete(category)}
         title="Delete category"
       >
-        ×
+        &times;
       </button>
       <div
         class="w-12 h-12 rounded-full mx-auto mb-4 shadow-sm"
