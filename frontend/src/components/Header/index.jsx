@@ -34,7 +34,7 @@ export function Header({ user, onLogout }) {
             Categories
           </Link>
           <div class="flex items-center gap-4 ml-8">
-            <span class="font-medium text-primary">{user.username}</span>
+            <span class="font-medium text-gray">{user.username}</span>
             <Button
               variant="primaryHollow"
               extraClasses="px-2! py-1!"
