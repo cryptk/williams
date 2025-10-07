@@ -155,6 +155,8 @@ Architectural references document **HOW the project IS designed** and **WHY it i
 - `WILLIAMS_SERVER_PORT`: Server port (default: 8080)
 - `WILLIAMS_DATABASE_DRIVER`: Database driver - sqlite, mysql, or postgres (default: sqlite)
 - `WILLIAMS_DATABASE_DSN`: Database connection string (default: ./williams.db)
+- `WILLIAMS_AUTH_JWT_SECRET`: JWT secret key for token signing
+- `WILLIAMS_AUTH_FIRST_USER_IS_ADMIN`: If true, first registered user gets admin role (default: false)
 - `WILLIAMS_LOGGING_LEVEL`: Log level (default: info)
 - `WILLIAMS_LOGGING_FORMAT`: Log format (default: json)
 
@@ -170,6 +172,7 @@ database:
   # For PostgreSQL: postgres://user:pass@host:port/dbname
 auth:
   jwt_secret: your-secret-key-here  # Change in production!
+  first_user_is_admin: false  # If true, first registered user gets admin role (default: false for security)
 bills:
   payment_grace_days: 3  # Days before due date to consider bill paid
 timezone: America/Los_Angeles  # Application timezone for date calculations
@@ -290,6 +293,7 @@ type User struct {
     Username     string    `json:"username"`
     Email        string    `json:"email"`
     PasswordHash string    `json:"-"` // Never exposed in JSON
+    Role         string    `json:"role"` // User role: "user" or "admin"
     CreatedAt    time.Time `json:"created_at"`
     UpdatedAt    time.Time `json:"updated_at"`
 }

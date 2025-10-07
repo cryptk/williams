@@ -35,7 +35,8 @@ type DatabaseConfig struct {
 
 // AuthConfig represents authentication configuration
 type AuthConfig struct {
-	JWTSecret string `mapstructure:"jwt_secret"`
+	JWTSecret        string `mapstructure:"jwt_secret"`
+	FirstUserIsAdmin bool   `mapstructure:"first_user_is_admin"`
 }
 
 // BillsConfig represents bills configuration
@@ -61,6 +62,7 @@ func Load() (*Config, error) {
 	v.SetDefault("database.driver", "sqlite")
 	v.SetDefault("database.dsn", "./williams.db")
 	v.SetDefault("auth.jwt_secret", "change-this-secret-in-production")
+	v.SetDefault("auth.first_user_is_admin", false)
 	v.SetDefault("bills.payment_grace_days", 7)
 	v.SetDefault("bills.maximum_billing_interval", 365)
 	v.SetDefault("logging.level", "info")

@@ -9,6 +9,7 @@ database:
 
 auth:
   jwt_secret: change-this-secret-in-production-use-long-random-string
+  first_user_is_admin: false  # If true, the first user to register will be assigned the admin role. Default: false (for security)
 
 bills:
   payment_grace_days: 7  # Number of days before next due date to consider a recurring bill as paid

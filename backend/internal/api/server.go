@@ -89,7 +89,7 @@ func NewServer(cfg *config.Config, db *database.DB) *Server {
 	paymentRepo := repository.NewPaymentRepository()
 
 	// Initialize services
-	authService := services.NewAuthService(userRepo, categoryRepo, cfg.Auth.JWTSecret)
+	authService := services.NewAuthService(userRepo, categoryRepo, cfg.Auth.JWTSecret, cfg.Auth.FirstUserIsAdmin)
 	billService := services.NewBillService(billRepo, paymentRepo, cfg)
 	categoryService := services.NewCategoryService(categoryRepo)
 

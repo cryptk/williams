@@ -16,6 +16,7 @@ type UserRepository interface {
 	GetByUsername(username string) (*models.User, error)
 	GetByEmail(email string) (*models.User, error)
 	Update(user *models.User) error
+	Count() (int64, error)
 }
 
 // userRepository implements UserRepository
@@ -79,4 +80,13 @@ func (r *userRepository) GetByEmail(email string) (*models.User, error) {
 func (r *userRepository) Update(user *models.User) error {
 	user.UpdatedAt = time.Now()
 	return r.db.Save(user).Error
+}
+
+// Count returns the total number of users
+func (r *userRepository) Count() (int64, error) {
+	var count int64
+	if err := r.db.Model(&models.User{}).Count(&count).Error; err != nil {
+		return 0, err
+	}
+	return count, nil
 }

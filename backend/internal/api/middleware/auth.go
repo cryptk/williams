@@ -46,6 +46,7 @@ func AuthMiddleware(authService *services.AuthService) gin.HandlerFunc {
 		}
 
 		c.Set("user_id", user_claims.Subject)
+		c.Set("user_roles", user_claims.Roles)
 		c.Next()
 	}
 }

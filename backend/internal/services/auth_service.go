@@ -14,24 +14,25 @@ import (
 
 // AuthService handles authentication business logic
 type AuthService struct {
-	userRepo     repository.UserRepository
-	categoryRepo repository.CategoryRepository
-	jwtSecret    []byte
+	userRepo         repository.UserRepository
+	categoryRepo     repository.CategoryRepository
+	jwtSecret        []byte
+	firstUserIsAdmin bool
 }
 
 // JWTClaims represents the JWT claims structure
-// Currently we have no custom claims, but this struct can be extended in the future
-// to include roles, permissions, or other user-related information.
 type JWTClaims struct {
+	Roles []string `json:"roles"`
 	jwt.RegisteredClaims
 }
 
 // NewAuthService creates a new authentication service
-func NewAuthService(userRepo repository.UserRepository, categoryRepo repository.CategoryRepository, jwtSecret string) *AuthService {
+func NewAuthService(userRepo repository.UserRepository, categoryRepo repository.CategoryRepository, jwtSecret string, firstUserIsAdmin bool) *AuthService {
 	return &AuthService{
-		userRepo:     userRepo,
-		categoryRepo: categoryRepo,
-		jwtSecret:    []byte(jwtSecret),
+		userRepo:         userRepo,
+		categoryRepo:     categoryRepo,
+		jwtSecret:        []byte(jwtSecret),
+		firstUserIsAdmin: firstUserIsAdmin,
 	}
 }
 
@@ -53,11 +54,26 @@ func (s *AuthService) Register(req *models.RegisterRequest) (*models.User, error
 		return nil, fmt.Errorf("failed to hash password: %w", err)
 	}
 
+	// Determine user role
+	role := "user" // Default role
+	if s.firstUserIsAdmin {
+		// Check if this is the first user
+		userCount, err := s.userRepo.Count()
+		if err != nil {
+			return nil, fmt.Errorf("failed to check user count: %w", err)
+		}
+		if userCount == 0 {
+			role = "admin"
+			log.Info().Msg("First user registered with admin role")
+		}
+	}
+
 	// Create user
 	user := &models.User{
 		Username:     req.Username,
 		Email:        req.Email,
 		PasswordHash: string(hashedPassword),
+		Role:         role,
 	}
 
 	if err := s.userRepo.Create(user); err != nil {
@@ -142,6 +158,7 @@ func (s *AuthService) ValidateToken(tokenString string) (*JWTClaims, error) {
 // generateToken creates a JWT token for a user
 func (s *AuthService) generateToken(user *models.User) (string, error) {
 	claims := JWTClaims{
+		Roles: []string{user.Role},
 		RegisteredClaims: jwt.RegisteredClaims{
 			Subject:   user.ID,
 			ExpiresAt: jwt.NewNumericDate(time.Now().Add(time.Hour * 24 * 7)), // 7 days

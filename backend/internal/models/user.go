@@ -8,6 +8,7 @@ type User struct {
 	Username     string    `json:"username" gorm:"uniqueIndex;not null;type:text" binding:"required,min=3,max=50"`
 	Email        string    `json:"email" gorm:"uniqueIndex;not null;type:text" binding:"required,email"`
 	PasswordHash string    `json:"-" gorm:"column:password_hash;not null;type:text"` // Never send password hash in JSON
+	Role         string    `json:"role" gorm:"not null;type:text;default:'user'"`    // User role: "user" or "admin"
 	CreatedAt    time.Time `json:"created_at" gorm:"autoCreateTime" binding:"-"`     // Read-only, managed by backend
 	UpdatedAt    time.Time `json:"updated_at" gorm:"autoUpdateTime" binding:"-"`     // Read-only, managed by backend
 }
