@@ -36,7 +36,7 @@ export function Auth({ onLoginSuccess }) {
 
   return (
     <div class="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary to-secondary p-8">
-      <div class="cardstatic p-12 w-full max-w-md shadow-lg !hover:">
+      <div class="cardstatic p-12 w-full max-w-md shadow-lg">
         <h1 class="text-4xl text-center mb-2 text-primary">💵 Williams</h1>
         <p class="text-center text-text-secondary mb-8">
           Get to know your bills
