@@ -9,7 +9,10 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
-func AuthMiddleware(authService *services.AuthService) gin.HandlerFunc {
+// AuthMiddleware creates a middleware that validates JWT tokens and optionally checks for required roles.
+// If requiredRoles is empty, only authentication is checked.
+// If requiredRoles is provided, the user must have at least one of the specified roles.
+func AuthMiddleware(authService *services.AuthService, requiredRoles ...string) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		authHeader := c.GetHeader("Authorization")
 		if authHeader == "" {
@@ -45,7 +48,37 @@ func AuthMiddleware(authService *services.AuthService) gin.HandlerFunc {
 			return
 		}
 
+		// Check if user has required roles (if any specified)
+		// If a route uses this middleware without specifying roles, only authentication is enforced
+		if len(requiredRoles) > 0 {
+			hasRequiredRole := false
+			for _, requiredRole := range requiredRoles {
+				for _, userRole := range user_claims.Roles {
+					if userRole == requiredRole {
+						hasRequiredRole = true
+						break
+					}
+				}
+				if hasRequiredRole {
+					break
+				}
+			}
+
+			if !hasRequiredRole {
+				log.Warn().
+					Str("user_id", user_claims.Subject).
+					Strs("user_roles", user_claims.Roles).
+					Strs("required_roles", requiredRoles).
+					Str("path", c.Request.URL.Path).
+					Msg("User does not have required role")
+				c.JSON(http.StatusForbidden, gin.H{"error": "insufficient permissions"})
+				c.Abort()
+				return
+			}
+		}
+
 		c.Set("user_id", user_claims.Subject)
+		c.Set("user_roles", user_claims.Roles)
 		c.Next()
 	}
 }

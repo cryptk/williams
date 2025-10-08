@@ -3,6 +3,7 @@ package services
 import (
 	"errors"
 	"fmt"
+	"slices"
 	"time"
 
 	"github.com/cryptk/williams/internal/models"
@@ -14,24 +15,25 @@ import (
 
 // AuthService handles authentication business logic
 type AuthService struct {
-	userRepo     repository.UserRepository
-	categoryRepo repository.CategoryRepository
-	jwtSecret    []byte
+	userRepo         repository.UserRepository
+	categoryRepo     repository.CategoryRepository
+	jwtSecret        []byte
+	firstUserIsAdmin bool
 }
 
 // JWTClaims represents the JWT claims structure
-// Currently we have no custom claims, but this struct can be extended in the future
-// to include roles, permissions, or other user-related information.
 type JWTClaims struct {
+	Roles []string `json:"roles"`
 	jwt.RegisteredClaims
 }
 
 // NewAuthService creates a new authentication service
-func NewAuthService(userRepo repository.UserRepository, categoryRepo repository.CategoryRepository, jwtSecret string) *AuthService {
+func NewAuthService(userRepo repository.UserRepository, categoryRepo repository.CategoryRepository, jwtSecret string, firstUserIsAdmin bool) *AuthService {
 	return &AuthService{
-		userRepo:     userRepo,
-		categoryRepo: categoryRepo,
-		jwtSecret:    []byte(jwtSecret),
+		userRepo:         userRepo,
+		categoryRepo:     categoryRepo,
+		jwtSecret:        []byte(jwtSecret),
+		firstUserIsAdmin: firstUserIsAdmin,
 	}
 }
 
@@ -53,15 +55,44 @@ func (s *AuthService) Register(req *models.RegisterRequest) (*models.User, error
 		return nil, fmt.Errorf("failed to hash password: %w", err)
 	}
 
-	// Create user
+	// Create user with appropriate roles
 	user := &models.User{
 		Username:     req.Username,
 		Email:        req.Email,
 		PasswordHash: string(hashedPassword),
 	}
 
-	if err := s.userRepo.Create(user); err != nil {
-		return nil, fmt.Errorf("failed to create user: %w", err)
+	// set numUsers to -1 to indicate we haven't checked yet
+	numUsers := int64(-1)
+	if s.firstUserIsAdmin {
+		numUsers, err = s.userRepo.Count()
+		if err != nil {
+			return nil, fmt.Errorf("failed to count users: %w", err)
+		}
+	}
+	if s.firstUserIsAdmin && numUsers == 0 {
+		// CreateWithFirstUserCheck involves an exclusive lock on the users table
+		// to prevent race conditions where multiple users could both become admins
+		// To avoid the bottleneck, we only do this if there appears to be no users
+		// in the database. This will be confirmed inside the locking transaction.
+		// In normal operation, this code path will only be hit once when the first user
+		// registers. Subsequent registrations will use the standard Create method.
+
+		adminRoles := []string{"admin", "user"}
+		if err := s.userRepo.CreateWithFirstUserCheck(user, adminRoles); err != nil {
+			return nil, fmt.Errorf("failed to create user: %w", err)
+		}
+
+		// Log if admin role was assigned (will have both admin and user roles)
+		if slices.Contains(user.Roles, "admin") {
+			log.Info().Str("user_id", user.ID).Msg("First user registered with admin role")
+		}
+	} else {
+		// Standard user creation
+		user.Roles = []string{"user"}
+		if err := s.userRepo.Create(user); err != nil {
+			return nil, fmt.Errorf("failed to create user: %w", err)
+		}
 	}
 
 	// Create default categories for the new user
@@ -142,6 +173,7 @@ func (s *AuthService) ValidateToken(tokenString string) (*JWTClaims, error) {
 // generateToken creates a JWT token for a user
 func (s *AuthService) generateToken(user *models.User) (string, error) {
 	claims := JWTClaims{
+		Roles: user.Roles,
 		RegisteredClaims: jwt.RegisteredClaims{
 			Subject:   user.ID,
 			ExpiresAt: jwt.NewNumericDate(time.Now().Add(time.Hour * 24 * 7)), // 7 days
