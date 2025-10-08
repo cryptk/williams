@@ -48,7 +48,7 @@ func (r *userRepository) Create(user *models.User) error {
 // This uses a transaction with FOR UPDATE locking to prevent race conditions.
 func (r *userRepository) CreateWithFirstUserCheck(user *models.User, adminRoles []string) error {
 	// 1. start a transaction to ensure that the user count check and creation are atomic
-	return r.db.Transaction(func(tx *gorm.DB) error {
+	return r.db.Transaction(func(tx *gorm.DB) (err error) {
 
 		// 2. Determine the dialect and acquire the table-level lock on the 'users' table.
 		var lockSQL string
@@ -66,7 +66,7 @@ func (r *userRepository) CreateWithFirstUserCheck(user *models.User, adminRoles 
 		case "sqlite":
 			// SQLite uses file-level locking for transactions, providing the necessary serialization
 			// and atomicity. Explicit table locking is not necessary or supported with this syntax.
-			log.Info().Msg("INFO: Running on SQLite. Transaction provides file-level serialization, skipping explicit LOCK TABLE for initial admin creation.")
+			log.Info().Msg("Running on SQLite. Transaction provides file-level serialization, skipping explicit LOCK TABLE for initial admin creation.")
 			// lockSQL remains empty, execution will skip the Exec(lockSQL) call below.
 		default:
 			return fmt.Errorf("unsupported database dialect for table locking: %s", dialect)
@@ -75,8 +75,9 @@ func (r *userRepository) CreateWithFirstUserCheck(user *models.User, adminRoles 
 		if unlockSQL != "" {
 			// Ensure we unlock tables at the end of the transaction if using MySQL
 			defer func() {
-				if err := tx.Exec(unlockSQL).Error; err != nil {
-					log.Error().Err(err).Msgf("failed to release table lock for %s (SQL: %s)", dialect, unlockSQL)
+				if deferredErr := tx.Exec(unlockSQL).Error; err != nil {
+					err = fmt.Errorf("task failed: %w; sql returned: %v", err, deferredErr)
+					log.Error().Str("dialect", dialect).Err(err).Msgf("failed to release table lock")
 				}
 			}()
 		}
@@ -99,7 +100,7 @@ func (r *userRepository) CreateWithFirstUserCheck(user *models.User, adminRoles 
 			// We release the lock by rolling back and return without creating the admin.
 			// We could create the account as a normal user, but if this race actually occurs
 			// it indicates a high-concurrency situation that should be investigated.
-			return errors.New("admin already registered by concurrent process")
+			return errors.New("first user already registered by concurrent process")
 		}
 
 		user.Roles = adminRoles
