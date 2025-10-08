@@ -76,7 +76,7 @@ func (r *userRepository) CreateWithFirstUserCheck(user *models.User, adminRoles 
 			// Ensure we unlock tables at the end of the transaction if using MySQL
 			defer func() {
 				if deferredErr := tx.Exec(unlockSQL).Error; err != nil {
-					err = fmt.Errorf("task failed: %w; sql returned: %v", err, deferredErr)
+					err = fmt.Errorf("initial user creation failed: %w; sql returned: %v", err, deferredErr)
 					log.Error().Str("dialect", dialect).Err(err).Msgf("failed to release table lock")
 				}
 			}()
