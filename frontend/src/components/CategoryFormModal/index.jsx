@@ -1,5 +1,5 @@
-import Modal from "../Modal";
-import { Button } from "../../uielements";
+import Modal from '../Modal'
+import { Button } from '../../uielements'
 
 export default function CategoryFormModal({
   isOpen,
@@ -13,13 +13,7 @@ export default function CategoryFormModal({
   onColorSelect,
 }) {
   return (
-    <Modal
-      isOpen={isOpen}
-      title="Add New Category"
-      onClose={onCancel}
-      size="md"
-      showActions={false}
-    >
+    <Modal isOpen={isOpen} title="Add New Category" onClose={onCancel} size="md" showActions={false}>
       <form onSubmit={onSubmit} class="p-8">
         <div class="form-group">
           <label for="name" class="form-label">
@@ -46,17 +40,13 @@ export default function CategoryFormModal({
                 type="button"
                 key={color}
                 class={`flex h-16 w-16 cursor-pointer items-center justify-center rounded-md border-2 transition-all hover:scale-110 ${
-                  formData.color === color
-                    ? "border-primary ring-2 ring-primary/30"
-                    : "border-transparent"
+                  formData.color === color ? 'border-primary ring-primary/30 ring-2' : 'border-transparent'
                 }`}
                 style={{ backgroundColor: color }}
                 onClick={() => onColorSelect(color)}
                 title={color}
               >
-                {formData.color === color && (
-                  <span class="text-2xl font-bold text-white">✓</span>
-                )}
+                {formData.color === color && <span class="text-2xl font-bold text-white">✓</span>}
               </button>
             ))}
           </div>
@@ -72,21 +62,25 @@ export default function CategoryFormModal({
             name="color"
             value={formData.color}
             onChange={onInputChange}
-            class="h-16 form-input cursor-pointer"
+            class="form-input h-16 cursor-pointer"
           />
         </div>
 
-        {error && <div class="error-message">{error}</div>}
+        {error && (
+          <div class="text-danger-dark bg-danger-light border-danger mb-0.25 rounded-md border-1 p-3 text-sm">
+            {error}
+          </div>
+        )}
 
-        <div class="mt-6 flex justify-end gap-4 border-t border-secondary pt-6">
+        <div class="border-secondary mt-6 flex justify-end gap-4 border-t pt-6">
           <Button variant="secondary" type="button" onClick={onCancel}>
             Cancel
           </Button>
           <Button variant="primary" type="submit" disabled={submitting}>
-            {submitting ? "Adding..." : "Add Category"}
+            {submitting ? 'Adding...' : 'Add Category'}
           </Button>
         </div>
       </form>
     </Modal>
-  );
+  )
 }

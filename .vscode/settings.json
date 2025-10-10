@@ -6,12 +6,14 @@
     "[javascript]": {
         "editor.formatOnSave": true,
         "editor.defaultFormatter": "esbenp.prettier-vscode",
-        "prettier.printWidth": 120
+        "prettier.printWidth": 120,
+        "editor.tabSize": 2,
     },
     "[javascriptreact]": {
         "editor.formatOnSave": true,
         "editor.defaultFormatter": "esbenp.prettier-vscode",
         "prettier.printWidth": 120,
+        "editor.tabSize": 2,
         "editor.quickSuggestions": {
             "strings": "on"
         },
@@ -19,26 +21,32 @@
     "[typescript]": {
         "editor.formatOnSave": true,
         "editor.defaultFormatter": "esbenp.prettier-vscode",
-        "prettier.printWidth": 120
+        "prettier.printWidth": 120,
+        "editor.tabSize": 2,
     },
     "[typescriptreact]": {
         "editor.formatOnSave": true,
         "editor.defaultFormatter": "esbenp.prettier-vscode",
-        "prettier.printWidth": 120
+        "prettier.printWidth": 120,
+        "editor.tabSize": 2,
     },
     "[css]": {
         "editor.formatOnSave": true,
         "editor.defaultFormatter": "esbenp.prettier-vscode",
-        "prettier.printWidth": 120
+        "prettier.printWidth": 120,
+        "editor.tabSize": 2,
     },
     "[tailwindcss]": {
         "editor.formatOnSave": true,
         "editor.defaultFormatter": "esbenp.prettier-vscode",
-        "prettier.printWidth": 120
+        "prettier.printWidth": 120,
+        "editor.tabSize": 2,
     },
     "[html]": {
         "editor.formatOnSave": true,
-        "editor.defaultFormatter": "esbenp.prettier-vscode"
+        "editor.defaultFormatter": "esbenp.prettier-vscode",
+        "prettier.printWidth": 120,
+        "editor.tabSize": 2,
     },
     "files.associations": {
         "*.css": "tailwindcss"
