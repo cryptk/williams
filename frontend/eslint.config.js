@@ -8,37 +8,39 @@ import { fileURLToPath } from 'url'
 import { dirname } from 'path'
 
 export default defineConfig([
-    ...tailwind.configs['flat/recommended'],
-    ...preact,
-    {
-        files: ['**/*.{js,mjs,cjs,jsx}'],
-        plugins: { js },
-        extends: ['js/recommended'],
-        languageOptions: { globals: globals.browser },
+  ...tailwind.configs['flat/recommended'],
+  ...preact,
+  {
+    files: ['**/*.{js,mjs,cjs,jsx}'],
+    plugins: { js },
+    extends: ['js/recommended'],
+    languageOptions: { globals: globals.browser },
+  },
+  {
+    files: ['**/*.css'],
+    plugins: { css },
+    language: 'css/css',
+    ignores: ['src/styles/tailwind.css'], // This file has some syntax that ESLint CSS parser doesn't understand
+    extends: ['css/recommended'],
+  },
+  {
+    languageOptions: {
+      globals: {
+        __APP_VERSION__: 'readonly',
+      },
     },
-    {
-        files: ['**/*.css'],
-        plugins: { css },
-        language: 'css/css',
-        extends: ['css/recommended'],
+  },
+  {
+    settings: {
+      tailwindcss: {
+        config: dirname(fileURLToPath(import.meta.url)) + '/src/styles/tailwind.css',
+      },
     },
-    {
-        languageOptions: {
-            globals: {
-                __APP_VERSION__: 'readonly',
-            },
-        },
+  },
+  {
+    rules: {
+      'tailwindcss/classnames-order': 'off', // handled by prettier plugin
+      'no-console': 'error',
     },
-    {
-        settings: {
-            tailwindcss: {
-                config: dirname(fileURLToPath(import.meta.url)) + '/src/styles/tailwind.css',
-            },
-        },
-    },
-    {
-        rules: {
-            'tailwindcss/classnames-order': 'off', // handled by prettier plugin
-        },
-    },
+  },
 ])

@@ -1,15 +1,15 @@
-import Modal from "../Modal";
-import Button from "../../uielements/Button";
+import Modal from '../Modal'
+import Button from '../../uielements/Button'
 
 export default function ConfirmationModal({
   title,
   message,
   itemName,
-  warningText = "This action cannot be undone.",
+  warningText = 'This action cannot be undone.',
   onConfirm,
   onCancel,
   isDeleting = false,
-  confirmButtonText = "Delete",
+  confirmButtonText = 'Delete',
   hideActions = false,
   children,
 }) {
@@ -19,10 +19,10 @@ export default function ConfirmationModal({
         Cancel
       </Button>
       <Button variant="danger" onClick={onConfirm} disabled={isDeleting}>
-        {isDeleting ? "Deleting..." : confirmButtonText}
+        {isDeleting ? 'Deleting...' : confirmButtonText}
       </Button>
     </>
-  );
+  )
 
   return (
     <Modal isOpen={true} title={title} onClose={onCancel} size="sm" showActions={!hideActions} actions={actions}>
@@ -33,12 +33,12 @@ export default function ConfirmationModal({
           <>
             <p class="mb-4">
               {message} {itemName && <strong>{itemName}</strong>}
-              {message && !message.endsWith("?") ? "?" : ""}
+              {message && !message.endsWith('?') ? '?' : ''}
             </p>
-            {warningText && <p class="font-medium text-danger">{warningText}</p>}
+            {warningText && <p class="text-danger font-medium">{warningText}</p>}
           </>
         )}
       </div>
     </Modal>
-  );
+  )
 }

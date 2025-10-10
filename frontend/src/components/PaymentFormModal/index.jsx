@@ -1,23 +1,9 @@
-import Modal from "../Modal";
-import { Button } from "../../uielements";
+import Modal from '../Modal'
+import { Button } from '../../uielements'
 
-export default function PaymentFormModal({
-  isOpen,
-  formData,
-  error,
-  submitting,
-  onSubmit,
-  onCancel,
-  onInputChange,
-}) {
+export default function PaymentFormModal({ isOpen, formData, error, submitting, onSubmit, onCancel, onInputChange }) {
   return (
-    <Modal
-      isOpen={isOpen}
-      title="Add Payment"
-      onClose={onCancel}
-      size="lg"
-      showActions={false}
-    >
+    <Modal isOpen={isOpen} title="Add Payment" onClose={onCancel} size="lg" showActions={false}>
       <form onSubmit={onSubmit} class="p-8">
         <div class="form-group">
           <label for="payment-amount" class="form-label">
@@ -67,17 +53,21 @@ export default function PaymentFormModal({
           />
         </div>
 
-        {error && <div class="error-message">{error}</div>}
+        {error && (
+          <div class="text-danger-dark bg-danger-light border-danger mb-0.25 rounded-md border-1 p-3 text-sm">
+            {error}
+          </div>
+        )}
 
-        <div class="mt-6 flex justify-end gap-4 border-t border-secondary pt-6">
+        <div class="border-secondary mt-6 flex justify-end gap-4 border-t pt-6">
           <Button variant="secondary" type="button" onClick={onCancel}>
             Cancel
           </Button>
           <Button variant="primary" type="submit" disabled={submitting}>
-            {submitting ? "Adding..." : "Add Payment"}
+            {submitting ? 'Adding...' : 'Add Payment'}
           </Button>
         </div>
       </form>
     </Modal>
-  );
+  )
 }

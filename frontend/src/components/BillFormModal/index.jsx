@@ -1,8 +1,8 @@
-import Modal from "../Modal";
-import { Button } from "../../uielements";
-import { getDaySuffix } from "../../utils/helpers";
-import DatePicker from "react-datepicker";
-import "react-datepicker/dist/react-datepicker.css";
+import Modal from '../Modal'
+import { Button } from '../../uielements'
+import { getDaySuffix } from '../../utils/helpers'
+import DatePicker from 'react-datepicker'
+import 'react-datepicker/dist/react-datepicker.css'
 
 export default function BillFormModal({
   isOpen,
@@ -19,7 +19,7 @@ export default function BillFormModal({
   return (
     <Modal
       isOpen={isOpen}
-      title={editingBill ? "Edit Bill" : "Add New Bill"}
+      title={editingBill ? 'Edit Bill' : 'Add New Bill'}
       onClose={onCancel}
       size="lg"
       showActions={false}
@@ -64,7 +64,7 @@ export default function BillFormModal({
             Recurrence *
           </label>
           <div class="flex flex-wrap items-center gap-2 text-base" role="group" aria-labelledby="recurrence-label">
-            <span id="recurrence-label" class="text-text-primary font-medium">
+            <span id="recurrence-label" class="font-medium">
               Due
             </span>
             <select
@@ -81,9 +81,9 @@ export default function BillFormModal({
               <option value="interval">every</option>
             </select>
 
-            {formData.recurrence_type === "fixed_date" && (
+            {formData.recurrence_type === 'fixed_date' && (
               <>
-                <span class="text-text-primary font-medium">on the</span>
+                <span class="font-medium">on the</span>
                 <input
                   type="number"
                   id="recurrence_days_fixed"
@@ -98,13 +98,13 @@ export default function BillFormModal({
                   max="31"
                   placeholder="##"
                 />
-                <span id="day-suffix-fixed" class="text-text-primary font-medium">
-                  {formData.recurrence_days ? getDaySuffix(parseInt(formData.recurrence_days, 10)) : "th"} of the month
+                <span id="day-suffix-fixed" class="font-medium">
+                  {formData.recurrence_days ? getDaySuffix(parseInt(formData.recurrence_days, 10)) : 'th'} of the month
                 </span>
               </>
             )}
 
-            {formData.recurrence_type === "interval" && (
+            {formData.recurrence_type === 'interval' && (
               <>
                 <input
                   type="number"
@@ -120,8 +120,8 @@ export default function BillFormModal({
                   max="365"
                   placeholder="##"
                 />
-                <span id="interval-suffix" class="text-text-primary font-medium">
-                  day{formData.recurrence_days !== "1" ? "s" : ""} starting on
+                <span id="interval-suffix" class="font-medium">
+                  day{formData.recurrence_days !== '1' ? 's' : ''} starting on
                 </span>
                 <DatePicker
                   selected={formData.start_date}
@@ -139,9 +139,9 @@ export default function BillFormModal({
               </>
             )}
 
-            {formData.recurrence_type === "none" && (
+            {formData.recurrence_type === 'none' && (
               <>
-                <span class="text-text-primary font-medium">on</span>
+                <span class="font-medium">on</span>
                 <DatePicker
                   selected={formData.start_date}
                   onChange={onDateChange}
@@ -195,17 +195,21 @@ export default function BillFormModal({
           />
         </div>
 
-        {error && <div class="error-message">{error}</div>}
+        {error && (
+          <div class="text-danger-dark bg-danger-light border-danger mb-0.25 rounded-md border-1 p-3 text-sm">
+            {error}
+          </div>
+        )}
 
-        <div class="mt-6 flex justify-end gap-4 border-t border-secondary pt-6">
+        <div class="border-secondary mt-6 flex justify-end gap-4 border-t pt-6">
           <Button variant="secondary" type="button" onClick={onCancel}>
             Cancel
           </Button>
           <Button variant="primary" type="submit" disabled={submitting}>
-            {submitting ? (editingBill ? "Updating..." : "Adding...") : editingBill ? "Update Bill" : "Add Bill"}
+            {submitting ? (editingBill ? 'Updating...' : 'Adding...') : editingBill ? 'Update Bill' : 'Add Bill'}
           </Button>
         </div>
       </form>
     </Modal>
-  );
+  )
 }

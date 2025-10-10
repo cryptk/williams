@@ -1,4 +1,4 @@
-@import "tailwindcss";
+@import 'tailwindcss';
 
 /* Custom Theme Configuration */
 @theme static {
@@ -77,15 +77,12 @@
   --color-danger: var(--color-danger-500);
   --color-danger-dark: var(--color-danger-700);
 
-  /* --color-card-bg: #ffffff; */
   --color-page-bg: #f5f7fa;
   --color-card-bg: var(--color-white);
 
-  /* --text-color-primary: var(--color-gray-600); */
   --text-color-gray: var(--color-gray-800);
   --text-color-white: var(--color-gray-100);
   --text-color-muted: var(--color-gray-400);
-  /* --text-color-theme-primary: var(--color-primary-700); */
 }
 
 /* Base styles */
@@ -103,20 +100,22 @@
   }
 
   /* Keyframe animations */
-  @keyframes fadeIn {
+  @keyframes fade-in {
     from {
       opacity: 0;
     }
+
     to {
       opacity: 1;
     }
   }
 
-  @keyframes slideUp {
+  @keyframes slide-up {
     from {
       transform: translateY(20px);
       opacity: 0;
     }
+
     to {
       transform: translateY(0);
       opacity: 1;
@@ -127,22 +126,22 @@
 /* Card Utility Classes */
 @utility card {
   @apply bg-card-bg rounded-md p-6;
-  @apply drop-shadow-md drop-shadow-secondary-dark hover:drop-shadow-xl hover:drop-shadow-secondary;
+  @apply drop-shadow-secondary-dark hover:drop-shadow-secondary drop-shadow-md hover:drop-shadow-xl;
   @apply transition-all duration-200 hover:-translate-y-0.5;
 }
 
 @utility cardstatic {
   @apply bg-card-bg rounded-md p-6;
-  @apply drop-shadow-md drop-shadow-secondary-dark;
+  @apply drop-shadow-secondary-dark drop-shadow-md;
   @apply transition-all duration-200;
 }
 
 @utility card-highlight-warning {
-  @apply bg-gradient-to-br from-warning-light to-card-bg border-l-4 border-warning;
+  @apply from-warning-light to-card-bg border-warning border-l-4 bg-gradient-to-br;
 }
 
 @utility card-highlight-danger {
-  @apply bg-gradient-to-br from-danger-light to-card-bg border-l-4 border-danger;
+  @apply from-danger-light to-card-bg border-danger border-l-4 bg-gradient-to-br;
 }
 
 /* Form Utility Classes */
@@ -151,16 +150,16 @@
 }
 
 @utility form-label {
-  @apply block mb-2 font-medium text-gray text-sm;
+  @apply text-gray mb-2 block text-sm font-medium;
 }
 
 @utility form-input {
-  @apply w-full p-2 border-2 border-solid border-secondary rounded-md bg-card-bg;
-  @apply text-base text-gray;
+  @apply border-secondary bg-card-bg w-full rounded-md border-2 border-solid p-2;
+  @apply text-gray text-base;
   @apply transition-all duration-200;
 
   &:focus {
-    @apply outline-none border-primary;
+    @apply border-primary outline-none;
   }
 
   &::placeholder {
@@ -169,12 +168,12 @@
 }
 
 @utility form-inline-input {
-  @apply w-auto max-w-30 p-2 border-2 border-solid border-secondary rounded-md bg-card-bg;
-  @apply text-base text-gray;
+  @apply border-secondary bg-card-bg w-auto max-w-30 rounded-md border-2 border-solid p-2;
+  @apply text-gray text-base;
   @apply transition-colors duration-200;
 
   &:focus {
-    @apply outline-none border-primary;
+    @apply border-primary outline-none;
   }
 
   &::placeholder {
@@ -186,13 +185,7 @@ textarea.form-input {
   @apply min-h-20;
 }
 
-input.form-inline-input[type="number"] {
+input.form-inline-input[type='number'] {
   /* Remove spinner arrows */
-  &::-webkit-outer-spin-button,
-  &::-webkit-inner-spin-button {
-    -webkit-appearance: none;
-    margin: 0;
-  }
-  -moz-appearance: textfield;
   appearance: textfield;
 }
