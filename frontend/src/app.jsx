@@ -23,7 +23,7 @@ export function App() {
       try {
         setUser(JSON.parse(storedUser));
       } catch (e) {
-        console.error("Failed to parse user data");
+        console.error("Failed to parse user data", e);
         localStorage.removeItem("token");
         localStorage.removeItem("user");
       }
@@ -50,11 +50,7 @@ export function App() {
   };
 
   if (loading) {
-    return (
-      <div class="flex items-center justify-center min-h-screen text-xl text-text-secondary">
-        Loading...
-      </div>
-    );
+    return <div class="flex min-h-screen items-center justify-center text-xl text-secondary">Loading...</div>;
   }
 
   if (!user) {
@@ -62,9 +58,9 @@ export function App() {
   }
 
   return (
-    <div class="min-h-screen flex flex-col">
+    <div class="flex min-h-screen flex-col">
       <Header user={user} onLogout={handleLogout} />
-      <main class="flex-1 max-w-7xl w-full mx-auto px-8 py-8">
+      <main class="mx-auto w-full max-w-7xl flex-1 px-8 py-8">
         <Router>
           <Dashboard path="/" />
           <Bills path="/bills" />

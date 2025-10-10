@@ -35,19 +35,19 @@ export function Auth({ onLoginSuccess }) {
   };
 
   return (
-    <div class="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary to-secondary p-8">
-      <div class="cardstatic p-12 w-full max-w-md shadow-lg">
-        <h1 class="text-4xl text-center mb-2 text-primary">💵 Williams</h1>
-        <p class="text-center text-text-secondary mb-8">
+    <div class="flex min-h-screen items-center justify-center bg-gradient-to-br from-primary to-secondary p-8">
+      <div class="w-full max-w-md cardstatic p-12 shadow-lg">
+        <h1 class="mb-2 text-center text-4xl text-primary">💵 Williams</h1>
+        <p class="text-text-secondary mb-8 text-center">
           Get to know your bills
         </p>
 
-        <div class="flex gap-2 mb-8 border-b-2 border-secondary">
+        <div class="mb-8 flex gap-2 border-b-2 border-secondary">
           <button
-            class={`flex-1 py-3 bg-transparent text-base font-medium cursor-pointer transition-all ${
+            class={`flex-1 cursor-pointer bg-transparent py-3 text-base font-medium transition-all ${
               isLogin
-                ? "text-primary border-b-3 border-b-primary -mb-0.5"
-                : "text-gray border-b-3 border-b-transparent -mb-0.5"
+                ? "-mb-0.5 border-b-3 border-b-primary text-primary"
+                : "-mb-0.5 border-b-3 border-b-transparent text-gray"
             }`}
             onClick={() => {
               setIsLogin(true);
@@ -57,10 +57,10 @@ export function Auth({ onLoginSuccess }) {
             Login
           </button>
           <button
-            class={`flex-1 py-3 bg-transparent text-base font-medium cursor-pointer transition-all ${
+            class={`flex-1 cursor-pointer bg-transparent py-3 text-base font-medium transition-all ${
               !isLogin
-                ? "text-primary border-b-3 border-b-primary -mb-0.5"
-                : "text-gray border-b-3 border-b-transparent -mb-0.5"
+                ? "-mb-0.5 border-b-3 border-b-primary text-primary"
+                : "-mb-0.5 border-b-3 border-b-transparent text-gray"
             }`}
             onClick={() => {
               setIsLogin(false);
@@ -73,7 +73,7 @@ export function Auth({ onLoginSuccess }) {
 
         <form
           onSubmit={handleSubmit}
-          class="flex flex-col transition-all duration-300 overflow-hidden"
+          class="flex flex-col overflow-hidden transition-all duration-300"
         >
           {error && <div class="error-message">{error}</div>}
 
@@ -97,7 +97,7 @@ export function Auth({ onLoginSuccess }) {
             class={`form-group transition-all duration-300 ease-in-out ${
               !isLogin
                 ? "max-h-32 opacity-100"
-                : "max-h-0 opacity-0 mb-0 p-0 overflow-hidden"
+                : "mb-0 max-h-0 overflow-hidden p-0 opacity-0"
             }`}
           >
             <label class="form-label" htmlFor="email">

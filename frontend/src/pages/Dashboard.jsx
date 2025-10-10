@@ -1,48 +1,44 @@
-import { useState, useEffect } from "preact/hooks";
+import { useState, useEffect } from 'preact/hooks'
 
-import { getStats } from "../services/api";
-import StatCard from "../components/StatCard";
+import { getStats } from '../services/api'
+import StatCard from '../components/StatCard'
 
 export function Dashboard() {
-  const [stats, setStats] = useState(null);
-  const [loading, setLoading] = useState(true);
+    const [stats, setStats] = useState(null)
+    const [loading, setLoading] = useState(true)
 
-  useEffect(() => {
-    loadStats();
-  }, []);
+    useEffect(() => {
+        loadStats()
+    }, [])
 
-  const loadStats = async () => {
-    try {
-      const data = await getStats();
-      setStats(data);
-    } catch (error) {
-      console.error("Failed to load stats:", error);
-    } finally {
-      setLoading(false);
+    const loadStats = async () => {
+        try {
+            const data = await getStats()
+            setStats(data)
+        } catch (error) {
+            console.error('Failed to load stats:', error)
+        } finally {
+            setLoading(false)
+        }
     }
-  };
 
-  if (loading) {
-    return <div class="flex items-center justify-center min-h-screen text-xl text-text-secondary">Loading...</div>;
-  }
+    if (loading) {
+        return <div class="flex min-h-screen items-center justify-center text-xl text-gray">Loading...</div>
+    }
 
-  return (
-    <div>
-      <h2 class="text-3xl font-bold mb-8">Dashboard</h2>
-      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        <StatCard title="Total Bills" value={stats?.total_bills || 0} />
-        <StatCard
-          title="Total Amount"
-          value={`$${stats?.total_amount?.toFixed(2) || "0.00"}`}
-        />
-        <StatCard
-          title="Amount Due"
-          value={`$${stats?.due_amount?.toFixed(2) || "0.00"}`}
-          highlight={stats?.due_amount > 0}
-        />
-        <StatCard title="Paid Bills" value={stats?.paid_bills || 0} />
-        <StatCard title="Unpaid Bills" value={stats?.unpaid_bills || 0} />
-      </div>
-    </div>
-  );
+    return (
+        <div>
+            <div class="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
+                <StatCard title="Total Bills" value={stats?.total_bills || 0} />
+                <StatCard title="Total Amount" value={`$${stats?.total_amount?.toFixed(2) || '0.00'}`} />
+                <StatCard
+                    title="Amount Due"
+                    value={`$${stats?.due_amount?.toFixed(2) || '0.00'}`}
+                    highlight={stats?.due_amount > 0}
+                />
+                <StatCard title="Paid Bills" value={stats?.paid_bills || 0} />
+                <StatCard title="Unpaid Bills" value={stats?.unpaid_bills || 0} />
+            </div>
+        </div>
+    )
 }

@@ -20,10 +20,10 @@ export default function BillCard({
   }
 
   return (
-    <div class={`card flex flex-col relative group ${cardStatusClasses}`}>
-      <div class="flex justify-between items-start mb-2">
-        <h3 class="flex-1 m-0 text-lg font-semibold">{bill.name}</h3>
-        <div class="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+    <div class={`group relative flex card flex-col ${cardStatusClasses}`}>
+      <div class="mb-2 flex items-start justify-between">
+        <h3 class="m-0 flex-1 text-lg font-semibold">{bill.name}</h3>
+        <div class="flex gap-2 opacity-0 transition-opacity duration-200 group-hover:opacity-100">
           <IconButton
             variant="secondary"
             onClick={() => route(`/bills/${bill.id}`)}
@@ -50,7 +50,7 @@ export default function BillCard({
 
       {/* Amount with color based on status */}
       <p
-        class={`text-2xl font-bold mb-2 ${
+        class={`mb-2 text-2xl font-bold ${
           status === "overdue"
             ? "text-danger"
             : status === "due-today"
@@ -88,19 +88,19 @@ export default function BillCard({
           : "Never"}
       </p>
       {bill.category_id && (
-        <p class="inline-block px-3 py-1 w-auto max-w-max bg-secondary-light rounded-full text-sm text-gray mt-2">
+        <p class="mt-2 inline-block w-auto max-w-max rounded-full bg-secondary-light px-3 py-1 text-sm text-gray">
           {categories.find((cat) => cat.id === bill.category_id)?.name ||
             "Unknown Category"}
         </p>
       )}
-      <p class="text-muted text-sm italic mt-2 leading-snug flex-grow mb-2">
+      <p class="mt-2 mb-2 flex-grow text-sm leading-snug text-muted italic">
         {bill.notes}
       </p>
-      <div class="flex items-center gap-2 mt-auto flex-wrap">
+      <div class="mt-auto flex flex-wrap items-center gap-2">
         <Pill variant={bill.is_paid ? "success" : "danger"} size="md">
           {bill.is_paid ? "Paid" : "Unpaid"}
         </Pill>
-        <span class="inline-block px-2 py-1 bg-success text-white rounded text-xs font-semibold">
+        <span class="inline-block rounded bg-success px-2 py-1 text-xs font-semibold text-white">
           {bill.recurrence_type === "fixed_date"
             ? "Monthly"
             : bill.recurrence_type === "interval"

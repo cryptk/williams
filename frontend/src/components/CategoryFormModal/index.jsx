@@ -45,7 +45,7 @@ export default function CategoryFormModal({
               <button
                 type="button"
                 key={color}
-                class={`w-16 h-16 rounded-md border-2 cursor-pointer transition-all hover:scale-110 flex items-center justify-center ${
+                class={`flex h-16 w-16 cursor-pointer items-center justify-center rounded-md border-2 transition-all hover:scale-110 ${
                   formData.color === color
                     ? "border-primary ring-2 ring-primary/30"
                     : "border-transparent"
@@ -55,7 +55,7 @@ export default function CategoryFormModal({
                 title={color}
               >
                 {formData.color === color && (
-                  <span class="text-white text-2xl font-bold">✓</span>
+                  <span class="text-2xl font-bold text-white">✓</span>
                 )}
               </button>
             ))}
@@ -72,13 +72,13 @@ export default function CategoryFormModal({
             name="color"
             value={formData.color}
             onChange={onInputChange}
-            class="form-input h-16 cursor-pointer"
+            class="h-16 form-input cursor-pointer"
           />
         </div>
 
         {error && <div class="error-message">{error}</div>}
 
-        <div class="flex gap-4 justify-end pt-6 mt-6 border-t border-secondary">
+        <div class="mt-6 flex justify-end gap-4 border-t border-secondary pt-6">
           <Button variant="secondary" type="button" onClick={onCancel}>
             Cancel
           </Button>

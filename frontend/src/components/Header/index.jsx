@@ -1,5 +1,4 @@
 import { Link } from "preact-router/match";
-import { useState } from "preact/hooks";
 
 export function Header({ user, onLogout }) {
   const isAdmin = user.roles && user.roles.includes("admin");
@@ -53,32 +52,32 @@ export function Header({ user, onLogout }) {
   };
 
   return (
-    <header class="bg-card-bg shadow sticky top-0 z-50 h-16">
-      <div class="max-w-7xl mx-auto px-8 flex justify-between items-center h-full">
+    <header class="sticky top-0 z-50 h-16 bg-card-bg shadow">
+      <div class="mx-auto flex h-full max-w-7xl items-center justify-between px-8">
         <h1 class="text-2xl font-bold text-primary">
           Williams{" "}
           <span class="text-sm text-muted">{typeof __APP_VERSION__ !== "undefined" ? __APP_VERSION__ : "dev"}</span>
         </h1>
 
         {/* Center navigation */}
-        <nav class="transform flex gap-8 items-center h-auto">
+        <nav class="flex h-auto transform items-center gap-8">
           <Link
             activeClassName="text-primary"
-            class="no-underline font-medium transition-colors hover:text-primary"
+            class="font-medium no-underline transition-colors hover:text-primary"
             href="/"
           >
             Dashboard
           </Link>
           <Link
             activeClassName="text-primary"
-            class="no-underline font-medium transition-colors hover:text-primary"
+            class="font-medium no-underline transition-colors hover:text-primary"
             href="/bills"
           >
             Bills
           </Link>
           <Link
             activeClassName="text-primary"
-            class="no-underline font-medium transition-colors hover:text-primary"
+            class="font-medium no-underline transition-colors hover:text-primary"
             href="/categories"
           >
             Categories
@@ -87,36 +86,36 @@ export function Header({ user, onLogout }) {
 
         {/* Right side user menu */}
         <div
-          class="relative h-full items-center flex"
+          class="relative flex h-full items-center"
           onMouseEnter={() => revealDropdown()}
           onMouseLeave={() => hideDropdown()}
         >
-          <button class="font-medium text-gray hover:text-primary transition-colors cursor-pointer bg-transparent border-none">
+          <button class="cursor-pointer border-none bg-transparent font-medium text-gray transition-colors hover:text-primary">
             {user.username}
           </button>
 
           <div
             id="usermenu_dropdown"
-            class="transition-all duration-1000 hidden opacity-0 translate-y-18 absolute right-0 mt-2 bg-card-bg shadow-lg rounded-md border border-secondary z-50"
+            class="absolute right-0 z-50 mt-2 hidden translate-y-18 rounded-md border border-secondary bg-card-bg opacity-0 shadow-lg transition-all duration-1000"
           >
             <Link
               href="/settings"
-              class="block px-8 py-2 text-sm text-gray hover:bg-primary hover:text-white no-underline transition-colors duration-200"
+              class="block px-8 py-2 text-sm text-gray no-underline transition-colors duration-200 hover:bg-primary hover:text-white"
             >
               Settings
             </Link>
             {isAdmin && (
               <Link
                 href="/admin"
-                class="block px-8 py-2 text-sm text-gray hover:bg-primary hover:text-white no-underline transition-colors duration-200"
+                class="block px-8 py-2 text-sm text-gray no-underline transition-colors duration-200 hover:bg-primary hover:text-white"
               >
                 Admin
               </Link>
             )}
-            <div class="border-t mx-2 border-secondary"></div>
+            <div class="mx-2 border-t border-secondary" />
             <button
               onClick={onLogout}
-              class="w-full text-left block px-8 py-2 text-sm text-gray hover:bg-primary hover:text-white transition-colors duration-200 bg-transparent border-none cursor-pointer"
+              class="block w-full cursor-pointer border-none bg-transparent px-8 py-2 text-left text-sm text-gray transition-colors duration-200 hover:bg-primary hover:text-white"
             >
               Logout
             </button>

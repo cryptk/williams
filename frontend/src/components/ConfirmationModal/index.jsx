@@ -10,7 +10,6 @@ export default function ConfirmationModal({
   onCancel,
   isDeleting = false,
   confirmButtonText = "Delete",
-  confirmButtonClass = "btn-danger",
   hideActions = false,
   children,
 }) {
@@ -26,14 +25,7 @@ export default function ConfirmationModal({
   );
 
   return (
-    <Modal
-      isOpen={true}
-      title={title}
-      onClose={onCancel}
-      size="sm"
-      showActions={!hideActions}
-      actions={actions}
-    >
+    <Modal isOpen={true} title={title} onClose={onCancel} size="sm" showActions={!hideActions} actions={actions}>
       <div class="p-6">
         {children ? (
           children
@@ -43,9 +35,7 @@ export default function ConfirmationModal({
               {message} {itemName && <strong>{itemName}</strong>}
               {message && !message.endsWith("?") ? "?" : ""}
             </p>
-            {warningText && (
-              <p class="text-danger font-medium">{warningText}</p>
-            )}
+            {warningText && <p class="font-medium text-danger">{warningText}</p>}
           </>
         )}
       </div>

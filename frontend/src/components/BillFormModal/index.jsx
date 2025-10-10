@@ -63,11 +63,7 @@ export default function BillFormModal({
           <label for="recurrence_type" class="form-label">
             Recurrence *
           </label>
-          <div
-            class="flex items-center flex-wrap gap-2 text-base"
-            role="group"
-            aria-labelledby="recurrence-label"
-          >
+          <div class="flex flex-wrap items-center gap-2 text-base" role="group" aria-labelledby="recurrence-label">
             <span id="recurrence-label" class="text-text-primary font-medium">
               Due
             </span>
@@ -102,14 +98,8 @@ export default function BillFormModal({
                   max="31"
                   placeholder="##"
                 />
-                <span
-                  id="day-suffix-fixed"
-                  class="text-text-primary font-medium"
-                >
-                  {formData.recurrence_days
-                    ? getDaySuffix(parseInt(formData.recurrence_days))
-                    : "th"}{" "}
-                  of the month
+                <span id="day-suffix-fixed" class="text-text-primary font-medium">
+                  {formData.recurrence_days ? getDaySuffix(parseInt(formData.recurrence_days, 10)) : "th"} of the month
                 </span>
               </>
             )}
@@ -130,10 +120,7 @@ export default function BillFormModal({
                   max="365"
                   placeholder="##"
                 />
-                <span
-                  id="interval-suffix"
-                  class="text-text-primary font-medium"
-                >
+                <span id="interval-suffix" class="text-text-primary font-medium">
                   day{formData.recurrence_days !== "1" ? "s" : ""} starting on
                 </span>
                 <DatePicker
@@ -210,18 +197,12 @@ export default function BillFormModal({
 
         {error && <div class="error-message">{error}</div>}
 
-        <div class="flex gap-4 justify-end pt-6 mt-6 border-t border-secondary">
+        <div class="mt-6 flex justify-end gap-4 border-t border-secondary pt-6">
           <Button variant="secondary" type="button" onClick={onCancel}>
             Cancel
           </Button>
           <Button variant="primary" type="submit" disabled={submitting}>
-            {submitting
-              ? editingBill
-                ? "Updating..."
-                : "Adding..."
-              : editingBill
-              ? "Update Bill"
-              : "Add Bill"}
+            {submitting ? (editingBill ? "Updating..." : "Adding...") : editingBill ? "Update Bill" : "Add Bill"}
           </Button>
         </div>
       </form>
