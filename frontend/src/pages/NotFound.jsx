@@ -1,17 +1,15 @@
-import { Link } from "preact-router/match";
+import { Button } from '../uielements'
+import { route } from 'preact-router'
 
 export function NotFound() {
-  return (
-    <div class="flex flex-col items-center justify-center min-h-[60vh] text-center px-4">
-      <h2 class="text-4xl font-bold text-text-primary mb-4">
-        404 - Page Not Found
-      </h2>
-      <p class="text-lg text-text-secondary mb-8">
-        The page you're looking for doesn't exist.
-      </p>
-      <Link href="/" class="btn btn-primary">
-        Go Home
-      </Link>
-    </div>
-  );
+    return (
+        <div class="flex min-h-[60vh] flex-col items-center justify-center px-4 text-center">
+            <h2 class="mb-4 text-4xl font-bold text-primary">404 - Page Not Found</h2>
+            <p class="mb-8 text-lg text-gray">The page you're looking for doesn't exist.</p>
+            {/* Add an onClick handler to navigate home if using a router */}
+            <Button onClick={() => route('/')} variant="primary">
+                Go Home
+            </Button>
+        </div>
+    )
 }

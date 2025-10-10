@@ -19,18 +19,18 @@ export default function Modal({
 
   return (
     <div
-      class="fixed inset-0 bg-black/50 flex items-center justify-center z-[1000] p-4 animate-[fadeIn_0.2s_ease-out]"
+      class="fixed inset-0 z-[1000] flex animate-[fadeIn_0.2s_ease-out] items-center justify-center bg-black/50 p-4"
       onClick={onClose}
     >
       <div
-        class={`bg-white rounded-lg shadow-lg w-full ${sizeClasses[size]} max-h-[90vh] overflow-y-auto animate-[slideUp_0.3s_ease-out]`}
+        class={`w-full rounded-lg bg-white shadow-lg ${sizeClasses[size]} max-h-[90vh] animate-[slideUp_0.3s_ease-out] overflow-y-auto`}
         onClick={(e) => e.stopPropagation()}
       >
         {/* Modal Header */}
-        <div class="flex justify-between items-center p-6 border-b border-secondary bg-white rounded-t-lg">
-          <h3 class="m-0 text-primary text-xl font-semibold">{title}</h3>
+        <div class="flex items-center justify-between rounded-t-lg border-b border-secondary bg-white p-6">
+          <h3 class="m-0 text-xl font-semibold text-primary">{title}</h3>
           <button
-            class="bg-transparent border-none text-2xl cursor-pointer text-text-muted p-0 w-8 h-8 flex items-center justify-center rounded hover:bg-black/5 hover:text-text-primary transition-all"
+            class="text-text-muted hover:text-text-primary flex h-8 w-8 cursor-pointer items-center justify-center rounded border-none bg-transparent p-0 text-2xl transition-all hover:bg-black/5"
             onClick={onClose}
           >
             &times;
@@ -42,7 +42,7 @@ export default function Modal({
 
         {/* Modal Actions */}
         {showActions && actions && (
-          <div class="flex gap-4 justify-end p-6 pt-4 border-t border-secondary">
+          <div class="flex justify-end gap-4 border-t border-secondary p-6 pt-4">
             {actions}
           </div>
         )}

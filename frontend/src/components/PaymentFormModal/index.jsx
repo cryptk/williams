@@ -69,7 +69,7 @@ export default function PaymentFormModal({
 
         {error && <div class="error-message">{error}</div>}
 
-        <div class="flex gap-4 justify-end pt-6 mt-6 border-t border-secondary">
+        <div class="mt-6 flex justify-end gap-4 border-t border-secondary pt-6">
           <Button variant="secondary" type="button" onClick={onCancel}>
             Cancel
           </Button>

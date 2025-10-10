@@ -5,7 +5,7 @@ export default function StatCard({ title, value, highlight = false }) {
         highlight ? "card-highlight-warning" : ""
       }`}
     >
-      <h3 class="text-sm text-gray uppercase tracking-wide mb-2">{title}</h3>
+      <h3 class="mb-2 text-sm tracking-wide text-gray uppercase">{title}</h3>
       <p
         class={`text-3xl font-bold ${
           highlight ? "text-warning" : "text-primary"

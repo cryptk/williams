@@ -5,22 +5,26 @@
     },
     "[javascript]": {
         "editor.formatOnSave": true,
-        "editor.defaultFormatter": "esbenp.prettier-vscode"
+        "editor.defaultFormatter": "esbenp.prettier-vscode",
+        "prettier.printWidth": 120
     },
     "[javascriptreact]": {
         "editor.formatOnSave": true,
         "editor.defaultFormatter": "esbenp.prettier-vscode",
+        "prettier.printWidth": 120,
         "editor.quickSuggestions": {
             "strings": "on"
         },
     },
     "[typescript]": {
         "editor.formatOnSave": true,
-        "editor.defaultFormatter": "esbenp.prettier-vscode"
+        "editor.defaultFormatter": "esbenp.prettier-vscode",
+        "prettier.printWidth": 120
     },
     "[typescriptreact]": {
         "editor.formatOnSave": true,
-        "editor.defaultFormatter": "esbenp.prettier-vscode"
+        "editor.defaultFormatter": "esbenp.prettier-vscode",
+        "prettier.printWidth": 120
     },
     "[css]": {
         "editor.formatOnSave": true,
