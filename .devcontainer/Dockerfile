@@ -31,5 +31,3 @@ RUN bash -c "source $NVM_DIR/nvm.sh && nvm install $NODE_VERSION && corepack ena
 
 # Set the working directory
 WORKDIR /workspace
-# Expose port 3000 for Node.js applications
-EXPOSE 3000
