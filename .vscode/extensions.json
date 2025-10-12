@@ -4,6 +4,7 @@
         "esbenp.prettier-vscode",
         "ms-vscode.makefile-tools",
         "github.vscode-github-actions",
-        "bradlc.vscode-tailwindcss"
+        "bradlc.vscode-tailwindcss",
+        "ms-vscode-remote.remote-containers"
     ]
 }
