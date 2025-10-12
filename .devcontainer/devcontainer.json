@@ -1,0 +1,45 @@
+// For format details, see https://aka.ms/devcontainer.json. For config options, see the
+// README at: https://github.com/devcontainers/templates/tree/main/src/alpine
+{
+	"name": "Williams",
+	"build": {
+		"dockerfile": "Dockerfile",
+		"args": { 
+			"GO_VERSION": "1.25.2",
+			"NODE_VERSION": "24"
+		}
+	},
+	"mounts": [
+		// Inherit local time zone from host machine.
+		"type=bind,readonly,source=/etc/localtime,target=/etc/localtime"
+	],
+	"remoteUser": "ubuntu",
+	"updateRemoteUserUID": true
+	// "features": {
+	// 	"ghcr.io/devcontainers/features/go:1": {
+	// 		"version": "latest"
+	// 	},
+	// 	"ghcr.io/devcontainers/features/node:1": {
+	// 		"nodeGypDependencies": true,
+	// 		"installYarnUsingApt": true,
+	// 		"version": "latest",
+	// 		"pnpmVersion": "latest",
+	// 		"nvmVersion": "latest"
+	// 	}
+	// }
+
+	// Features to add to the dev container. More info: https://containers.dev/features.
+	// "features": {},
+
+	// Use 'forwardPorts' to make a list of ports inside the container available locally.
+	// "forwardPorts": [],
+
+	// Use 'postCreateCommand' to run commands after the container is created.
+	// "postCreateCommand": "uname -a",
+
+	// Configure tool-specific properties.
+	// "customizations": {},
+
+	// Uncomment to connect as root instead. More info: https://aka.ms/dev-containers-non-root.
+	// "remoteUser": "root"
+}

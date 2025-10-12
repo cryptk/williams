@@ -54,11 +54,11 @@ build/config.yaml: backend/configs/config.yaml backend/configs/config.example.ya
 run: build/frontend build/backend configure ## Build and run both frontend and backend
 	cd ./build && ./williams
 
-run/frontend: ## Run frontend in development mode
+dev/frontend: ## Run frontend in development mode
 	cd frontend && npm install && npm run dev
 
-run/backend: ## Run backend in development mode
-	cd backend && go run ./cmd/server/main.go
+dev/backend: configure ## Run backend in development mode
+	cd backend && air
 
 clean: clean/frontend clean/backend ## Clean all build artifacts
 
